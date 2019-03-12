@@ -90,6 +90,7 @@ FunctionsToExport = @(
     'Show-UIWindow',
     'Set-UIKnownProperty',
     'New-UIObject',
+    'New-UIObjectCollection',
     'New-UIPowerShell',
     'Add-UIBinding',
     'Add-UIEvent',

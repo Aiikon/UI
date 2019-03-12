@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Management.Automation;
@@ -214,6 +215,16 @@ namespace Rhodium.UI
             var result = new Collection<string>();
             result.Add("System.Object");
             return result;
+        }
+    }
+
+    public class UIObjectCollection : ObservableCollection<UIObject>
+    {
+        public void AddWithDispatcher(UIObject uiObject, System.Windows.Threading.Dispatcher dispatcher)
+        {
+            dispatcher.BeginInvoke(new Action(() => {
+                base.Add(uiObject);
+            }));
         }
     }
 }

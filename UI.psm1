@@ -183,10 +183,39 @@ Function New-UIObject
         catch
         {
             $text = [System.IO.File]::ReadAllText("$PSScriptRoot\UIObject\UIObject.cs")
-            Add-Type -TypeDefinition $text
+            Add-Type -TypeDefinition $text -ReferencedAssemblies WindowsBase
             Update-TypeData -TypeName "Rhodium.UI.UIObject" -TypeAdapter "Rhodium.UI.UIObjectAdapter"
         }
         [Rhodium.UI.UIObject]::FromPSObject([pscustomobject]$BaseObject)
+    }
+}
+
+Function New-UIObjectCollection
+{
+    Param
+    (
+        [Parameter(ValueFromPipeline=$true)] [object] $InputObject
+    )
+    Begin
+    {
+        try { [void][Rhodium.UI.UIObject] }
+        catch
+        {
+            $text = [System.IO.File]::ReadAllText("$PSScriptRoot\UIObject\UIObject.cs")
+            Add-Type -TypeDefinition $text -ReferencedAssemblies WindowsBase
+            Update-TypeData -TypeName "Rhodium.UI.UIObject" -TypeAdapter "Rhodium.UI.UIObjectAdapter"
+        }
+        $collection = New-Object Rhodium.UI.UIObjectCollection
+    }
+    Process
+    {
+        if (!$InputObject) { return }
+        if ($InputObject -is [Rhodium.UI.UIObject]) { $collection.Add($InputObject) }
+        else { $collection.Add([Rhodium.UI.UIObject]::FromPSObject([pscustomobject]$InputObject)) }
+    }
+    End
+    {
+        ,$collection
     }
 }
 
