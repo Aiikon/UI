@@ -1,2 +1,3 @@
-UIObject\bin\*
-UIObject\.vs\*
+UIObject/bin/*
+UIObject/obj/*
+UIObject/.vs/*
