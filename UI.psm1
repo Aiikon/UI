@@ -556,7 +556,7 @@ New-UIFunction ListView ([System.Windows.Controls.ListView]) {
             $view.Columns.Add($gridViewColumn)
         }
         $control.View = $view
-        [void]$PSBoundParameters.Remove('Columns')
+        [void]$PSBoundParameters.Remove('Columns') # Otherwise Set-UIKnownProperty will mess this up
     }
     Set-UIKnownProperty $control $PSBoundParameters
 }
