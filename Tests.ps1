@@ -1,5 +1,6 @@
 ﻿Import-Module C:\PSModule\UI -Force
 
+
 Show-UIWindow -Title "Row, Col, RowSpan and ColSpan Tests" -Width 500 -Height 300 {
     New-UIGrid -RowDef auto, *, 50 -ColDef auto, *, 200 {
         New-UIButton "Row 0, Col 0" -Margin 2
@@ -11,11 +12,13 @@ Show-UIWindow -Title "Row, Col, RowSpan and ColSpan Tests" -Width 500 -Height 30
     }
 }
 
+
 Show-UIWindow -Title "Find-UIParent Close Window Test" -Width 800 -Height 400 {
     New-UIButton -Content "Close Window" -Margin 4 -AddClick {
         Find-UIParent -Type Window | ForEach-Object Close
     }
 }
+
 
 Show-UIWindow -Title "Alignment Tests and Demonstration, UniformGrid" -Width 800 -Height 600 {
     New-UIGrid {
@@ -29,14 +32,17 @@ Show-UIWindow -Title "Alignment Tests and Demonstration, UniformGrid" -Width 800
     }
 }
 
+
 Show-UIWindow -Title "ListView Tests" -Width 600 -Height 300 {
     New-UIListView -ItemsSource (Get-Service | Select Name, Status, DisplayName) -Columns Name, Status, DisplayName `
         -SelectionMode Single
 }
 
+
 Show-UIWindow -Title "DataGrid Tests" -Width 600 -Height 300 {
     New-UIDataGrid -ItemsSource (Get-Service | Select Name, Status, DisplayName)
 }
+
 
 Show-UIWindow -Title "Button Content Tests" -Width 400 -Height 200 {
     New-UIButton -Margin 4 {
@@ -47,23 +53,87 @@ Show-UIWindow -Title "Button Content Tests" -Width 400 -Height 200 {
     }
 }
 
+
 Show-UIWindow -Width 300 -Height 600 -Title "TextBlock Tests" {
     New-UIStackPanel -Margin 4 {
         New-UITextBlock "Simple Text"
         New-UITextBlock "Bold Text" -FontWeight Bold
-        New-UITextBlock -BindTextTo "Sample" -DataContext ([pscustomobject]@{Sample='Data Binding Works'})
+        New-UITextBlock "Italic Text" -FontStyle Italic
+        New-UITextBlock "Console Text" -FontFamily Consolas
+        New-UITextBlock "Bigger Text" -FontSize 20
+        New-UITextBlock -BindTextTo "Sample" -DataContext ([pscustomobject]@{Sample='Data Bound Text'})
     }
 }
 
-$mbtMaster = New-UIObject
-$mbtMaster.Value = [double]20
-Show-UIWindow -Width 600 -Height 300 -Title "Multiple Binding Tests" -DataContext $mbtMaster {
+
+$PbeMaster = New-UIObject
+$PbeMaster.CurrentProgress = 25
+Show-UIWindow -Width 600 -Height 300 -Title "Progress Binding Example" -DataContext $PbeMaster {
     New-UIStackPanel {
-        New-UIProgressBar -Margin 4 -Minimum 0 -Maximum 100 -BindValueTo Value -Height 20
-        New-UISlider -Margin 4 -Minimum 0 -Maximum 100 -BindValueTo Value -Orientation Horizontal -Foreground Black -TickPlacement BottomRight
+        New-UIProgressBar -Margin 4 -Minimum 0 -Maximum 100 -BindValueTo CurrentProgress -Height 20
+        New-UISlider -Margin 4 -Minimum 0 -Maximum 100 -BindValueTo CurrentProgress -Orientation Horizontal -Foreground Black -TickPlacement BottomRight
         New-UIStackPanel -Orientation Horizontal -Margin 4 {
             New-UITextBlock "Value:"
-            New-UITextBox -Width 50 -BindTextTo Value -Margin 4,0,0,0
+            New-UITextBox -Width 50 -BindTextTo CurrentProgress -Margin 4,0,0,0
+        }
+    }
+}
+
+
+$MenuTestMaster = New-UIObject
+$MenuTestMaster.LeftToRight = $true
+$MenuTestMaster.RightToLeft = $false
+$MenuTestMaster.Custom = "Test..."
+Show-UIWindow -Title "Menu Tests" -Width 500 -Height 200 -DataContext $MenuTestMaster {
+    New-UIGrid -RowDef auto, * {
+        New-UIMenu {
+            New-UIMenuItem _File {
+                New-UIMenuItem E_xit -AddClick { Find-UIParent -Type Window | ForEach-Object Close }
+            }
+            New-UIMenuItem _View {
+                New-UIMenuItem _Layout {
+                    New-UIMenuItem "_Left to Right" -IsCheckable $true -BindIsCheckedTo LeftToRight
+                    New-UIMenuItem "_Right to Left" -IsCheckable $true -BindIsCheckedTo RightToLeft
+                }
+                New-UIMenuItem _Other
+            }
+        }
+        New-UIButton "Main Content Here" -Margin 4 -GridRow 1
+    }
+}
+
+
+$RadioTestMaster = New-UIObject
+$RadioTestMaster.OneA = $true
+$RadioTestMaster.OneB = $false
+$RadioTestMaster.TwoX = $false
+$RadioTestMaster.TwoY = $true
+$RadioTestMaster.TwoZ = $false
+$RadioTestMaster.Three1 = $true
+$RadioTestMaster.Three2 = $false
+
+# FYI: Radio Buttons need merely be in different parent containers (i.e. New-UIStackPanel) to be separate
+# groups, the GroupBox is merely stylistic
+Show-UIWindow -Title "Radio/Check Button Tests" -SizeToContent WidthAndHeight -DataContext $RadioTestMaster {
+    New-UIStackPanel {
+        New-UIGroupBox "Radio Button Group One" -Margin 4 {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UIRadioButton "A" -BindIsCheckedTo OneA -Margin 4
+                New-UIRadioButton "B" -BindIsCheckedTo OneB -Margin 4
+            }
+        }
+        New-UIGroupBox "Radio Button Group Two" -Margin 4 {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UIRadioButton "X" -BindIsCheckedTo TwoX -Margin 4
+                New-UIRadioButton "Y" -BindIsCheckedTo TwoY -Margin 4
+                New-UIRadioButton "Z" -BindIsCheckedTo TwoZ -Margin 4
+            }
+        }
+        New-UIGroupBox "Check Box Group Three" -Margin 4 {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UICheckBox "1" -BindIsCheckedTo Three1 -Margin 4
+                New-UICheckBox "2" -BindIsCheckedTo Three2 -Margin 4
+            }
         }
     }
 }
