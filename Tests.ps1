@@ -137,3 +137,32 @@ Show-UIWindow -Title "Radio/Check Button Tests" -SizeToContent WidthAndHeight -D
         }
     }
 }
+
+
+$sharedContextMenu = New-UIContextMenu {
+    New-UIMenuItem "Click Me" -AddClick {
+        Show-UIMessageBox $this.DataContext
+    }
+}
+Show-UIWindow -Title "Context Menu Samples" -Width 300 -Height 200 {
+    New-UIGrid -ColDef *, * -RowDef *, * {
+        New-UIButton -GridColSpan 2 "Right-Click Me" -Margin 4 -ContextMenu {
+            New-UIContextMenu {
+                New-UIMenuItem "Choice 1 (Click This)" -AddClick { "You Clicked Choice 1" | Show-UIMessageBox }
+                New-UIMenuItem "Choice 2"
+                New-UIMenuItem "Other" {
+                    New-UIMenuItem "Other A"
+                    New-UIMenuItem "Other B"
+                }
+            }
+        }
+        New-UIButton -GridRow 1 -GridCol 0 "Left-Click Me 1" -Margin 4,0,4,4 -AddClick {
+            $sharedContextMenu.DataContext = "Button 1"
+            $sharedContextMenu.IsOpen = $true
+        }
+        New-UIButton -GridRow 1 -GridCol 1 "Left-Click Me 2" -Margin 0,0,4,4 -AddClick {
+            $sharedContextMenu.DataContext = "Button 2"
+            $sharedContextMenu.IsOpen = $true
+        }
+    }
+}

@@ -90,6 +90,13 @@ Function Set-UIKnownProperty
             $Control.LayoutTransform = $transform
         }
 
+        if ($Properties.Contains('ContextMenu'))
+        {
+            $contextmenu = $Properties['ContextMenu']
+            if ($contextmenu -is [scriptblock]) { $contextmenu = & $contextmenu }
+            $Control.ContextMenu = $contextmenu
+        }
+
         if ($Properties.Contains('Align'))
         {
             $align = $Properties['Align']
@@ -306,6 +313,7 @@ $Script:NewUIObjectTemplate = [string]{
         [Parameter()] [int] $GridColSpan,
         [Parameter()] [System.Windows.Controls.Dock] $Dock,
         [Parameter()] [object] $LayoutTransform,
+        [Parameter()] [object] $ContextMenu,
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [object] $DataContext,
         [Parameter()] [object] $Tag
