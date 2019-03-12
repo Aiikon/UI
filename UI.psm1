@@ -233,6 +233,22 @@ Function Find-UIParent
     }
 }
 
+Function Show-UIMessageBox
+{
+    Param
+    (
+        [Parameter(Position=0,ValueFromPipeline=$true,Mandatory=$true)] [string] $Message,
+        [Parameter()] [string] $Caption,
+        [Parameter()] [System.Windows.Forms.MessageBoxButtons] $Buttons
+    )
+    Process
+    {
+        $Caption = "$Caption"
+        if ($Buttons) { return [System.Windows.MessageBox]::Show($Message, $Caption, $Buttons) }
+        else { [void][System.Windows.MessageBox]::Show($Message, $Caption) }
+    }
+}
+
 # ======================================================================================================================
 # Manual Functions
 # ======================================================================================================================
