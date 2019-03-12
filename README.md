@@ -44,3 +44,19 @@ Show-UIWindow -Width 600 -Height 300 -Title "Progress Binding Example" -DataCont
 ```
 
 The cmdlets will use the same names and structure as XAML as often as possible. Check the Tests.ps1 file for more layout examples.
+
+## How to enhance it
+The module comes with cmdlets and parameters for the most common UI elements and properties I use on a daily basis. Adding more is relatively straightforward.
+
+### Adding an additional parameter
+First you'll have to add the parameter to Set-UIKnownProperty.
+
+* If it's a simple property (i.e. you just copy the value in the Parameter to the Property of the WPF control without modifying it), add it to the $simplePropertyList variable at the top of Set-UIKnownProperty.
+* If it's a data binding property, i.e. Bind\<PropertyName\>To, add \<PropertyName\> to $bindPropertyList.
+* If it's an event, i.e. Add\<EventName\>, add \<EventName\> to $eventPropertyList.
+* If it's a more complicated property, use some of the other lines in Set-UIKnownProperty for an example, such as Margin, ContextMenu or Dock depending on the type of functionality you want to use.
+
+Second, scroll down to the Generated Functions section and find the New-UIFunction corresponding to the type you want to add the parameter to. Add an extra Parameter definition for your new parameter (use the existing Parameter blocks as examples). To add the parameter to all New-UI\* cmdlets, add it in $Script:NewUIObjectTemplate instead.
+
+### Adding an additional WPF control
+Scroll down to the Generated Function section and find a New-UIFunction definition. Duplicate it and change the name, type and parameters for your own control. Don't forget to add any additional parameters to Set-UIKnownProperty if they're not defined there yet. If your cmdlet requires some extra processing beyond setting properties, bindings and events, use the -CustomScript parameter (use ListView as an example).
