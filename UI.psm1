@@ -179,7 +179,7 @@ Function New-UIObject
             Add-Type -TypeDefinition $text
             Update-TypeData -TypeName "Rhodium.UI.UIObject" -TypeAdapter "Rhodium.UI.UIObjectAdapter"
         }
-        New-Object Rhodium.UI.UIObject
+        [Rhodium.UI.UIObject]::FromPSObject([pscustomobject]$BaseObject)
     }
 }
 

@@ -50,25 +50,28 @@ namespace Rhodium.UI
                 NotifyPropertyChanged(name);
         }
 
-        public UIObject()
+        public static UIObject FromPSObject(PSObject BaseObject)
         {
-
-        }
-
-        public UIObject(PSObject BaseObject)
-        {
-            if (BaseObject == null) return;
+            UIObject uiObject = new UIObject();
+            if (BaseObject == null)
+                return uiObject;
 
             foreach (var property in BaseObject.Properties)
-                SetProperty(property.Name, property.Value);
+                uiObject.SetProperty(property.Name, property.Value);
+
+            return uiObject;
         }
 
-        public UIObject(IDictionary<string,object> Hashtable)
+        public static UIObject FromDictionary(IDictionary<string,object> Dictionary)
         {
-            if (Hashtable == null) return;
+            UIObject uiObject = new UIObject();
+            if (Dictionary == null)
+                return uiObject;
 
-            foreach (string propertyName in Hashtable.Keys)
-                SetProperty(propertyName, Hashtable[propertyName]);
+            foreach (string propertyName in Dictionary.Keys)
+                uiObject.SetProperty(propertyName, Dictionary[propertyName]);
+
+            return uiObject;
         }
 
         internal void NotifyPropertyChanged(string propertyName)
