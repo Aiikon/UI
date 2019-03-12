@@ -31,7 +31,7 @@ Function Set-UIKnownProperty
 
         $simplePropertyList = 'Width', 'MinWidth', 'MaxWidth', 'Height', 'MinHeight', 'MaxHeight', # Size Properties
             'DataContext', 'Tag', 'ItemsSource', # Data Properties
-            'Text', 'Header', 'SelectedIndex', # Value Properties
+            'Text', 'Header', 'SelectedIndex', 'AcceptsReturn', # Value Properties
             'FontSize', 'FontWeight', 'FontStyle', 'FontFamily', # Font Properties
             'Orientation', 'Stretch', 'VerticalScrollBarVisiblity', 'HorizontalScrollBarVisibility', 'Angle', 'Rows', 'Columns', # Layout Properties
             'BorderBrush', 'Background', 'Foreground', # Color Properties
@@ -607,6 +607,7 @@ New-UIFunction TextBox ([System.Windows.Controls.TextBox]) {
     [Parameter()] [object] $FontStyle,
     [Parameter()] [object] $FontFamily,
     [Parameter()] [string] $BindTextTo,
+    [Parameter()] [bool] $AcceptsReturn,
     [Parameter()] [System.Windows.Controls.ScrollBarVisibility] $VerticalScrollBarVisibility
 }
 
