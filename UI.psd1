@@ -92,6 +92,7 @@ FunctionsToExport = @(
     'New-UIObject',
     'New-UIObjectCollection',
     'New-UIPowerShell',
+    'Invoke-UIPowerShell',
     'Add-UIBinding',
     'Add-UIEvent',
     'Find-UIParent',

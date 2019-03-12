@@ -223,7 +223,7 @@ Function New-UIPowerShell
 {
     Param
     (
-        [Parameter()] [string[]] $ImportVariables
+        [Parameter()] [PSVariable[]] $SetVariables
     )
     End
     {
@@ -234,22 +234,43 @@ Function New-UIPowerShell
         $typeData.TypeAdapter = [Rhodium.UI.UIObjectAdapter]
         $typeEntry = New-Object System.Management.Automation.Runspaces.SessionStateTypeEntry $typeData, $false
         $iss.Types.Add($typeEntry)
+        $typeData = New-Object System.Management.Automation.Runspaces.TypeData ([Rhodium.UI.UIObjectCollection])
+        $typeEntry = New-Object System.Management.Automation.Runspaces.SessionStateTypeEntry $typeData, $false
+        $iss.Types.Add($typeEntry)
+        $iss.Commands.Add((New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry 'New-UIObject', ${function:New-UIObject}))
+        $iss.Commands.Add((New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry 'New-UIObjectCollection', ${function:New-UIObjectCollection}))
 
         $runspace = [RunSpaceFactory]::CreateRunspace($iss)
         $runspace.ApartmentState = "STA"
         $runspace.ThreadOptions = "ReuseThread"
         $runspace.Open()
 
-        foreach ($varName in $ImportVariables)
+        if ($SetVariables)
         {
-            $var = $PSCmdlet.SessionState.PSVariable.Get($varName)
-            $runspace.SessionStateProxy.SetVariable($var.Name, $var.Value)
+            foreach ($var in $SetVariables)
+            {
+                $runspace.SessionStateProxy.SetVariable($var.Name, $var.Value)
+            }
         }
 
         $powershell = [PowerShell]::Create()
         $powershell.Runspace = $runspace
 
         $powershell
+    }
+}
+
+Function Invoke-UIPowerShell
+{
+    Param
+    (
+        [Parameter(Mandatory=$true)] [ScriptBlock] $ScriptBlock,
+        [Parameter()] [PSVariable[]] $SetVariables
+    )
+    End
+    {
+        $powershell = New-UIPowerShell -SetVariables $SetVariables
+        [void]$powershell.AddScript($ScriptBlock).BeginInvoke()
     }
 }
 
