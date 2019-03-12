@@ -58,5 +58,5 @@ First you'll have to add the parameter to Set-UIKnownProperty.
 
 Second, scroll down to the Generated Functions section and find the New-UIFunction corresponding to the type you want to add the parameter to. Add an extra Parameter definition for your new parameter (use the existing Parameter blocks as examples). To add the parameter to all New-UI\* cmdlets, add it in $Script:NewUIObjectTemplate instead.
 
-### Adding an additional WPF control
-Scroll down to the Generated Function section and find a New-UIFunction definition. Duplicate it and change the name, type and parameters for your own control. Don't forget to add any additional parameters to Set-UIKnownProperty if they're not defined there yet. If your cmdlet requires some extra processing beyond setting properties, bindings and events, use the -CustomScript parameter (use ListView as an example).
+### Adding an additional New-UI\<Control\> cmdlet
+Scroll down to the Generated Function section and find a New-UIFunction definition. Duplicate it and change the name, type and parameters for your own control. Don't forget to add any additional parameters to Set-UIKnownProperty if they're not defined there yet. If your cmdlet requires some extra processing beyond setting properties, bindings and events, use the -CustomScript parameter (use ListView as an example). Don't forget to modify UI.psd1 to include the new function.
