@@ -36,7 +36,8 @@ Function Set-UIKnownProperty
             'Orientation', 'Stretch', 'VerticalScrollBarVisiblity', 'HorizontalScrollBarVisibility', 'Angle', 'Rows', 'Columns', # Layout Properties
             'BorderBrush', 'Background', 'Foreground', # Color Properties
             'DisplayMemberPath', 'SelectedValuePath', # Path Properties
-            'IsCheckable', 'IsExpanded', 'Minimum', 'Maximum', 'TickPlacement', 'TickFrequency', 'Ticks', 'SelectionMode' # Other Properties
+            'IsCheckable', 'IsExpanded', 'Minimum', 'Maximum', 'TickPlacement', 'TickFrequency', 'Ticks', 'SelectionMode', # Other Properties
+            'SizeToContent', 'WindowStyle' # Other Properties
 
         $bindPropertyList = 'Text', 'IsChecked', 'ItemsSource', 'SelectedValue', 'SelectedDate', 'Maximum', 'Value', 'Content'
 
@@ -265,6 +266,8 @@ Function Show-UIWindow
         [Parameter()] [double] $Height,
         [Parameter()] [double] $MinHeight,
         [Parameter()] [double] $MaxHeight,
+        [Parameter()] [System.Windows.SizeToContent] $SizeToContent,
+        [Parameter()] [System.Windows.WindowStyle] $WindowStyle,
         [Parameter()] [object] $DataContext,
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [hashtable] $AddEvents
