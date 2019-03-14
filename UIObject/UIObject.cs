@@ -41,6 +41,10 @@ namespace Rhodium.UI
                 propertyDescriptorDict[name] = propertyDescriptor;
             }
 
+            // Because the UI will hate you unless you do this:
+            if (value is PSObject && ((PSObject)value).BaseObject != null)
+                value = ((PSObject)value).BaseObject;
+
             bool changed = false;
             if (valueDict.ContainsKey(name) && valueDict[name] != null && value != null)
                 changed = !value.Equals(valueDict[name]);
@@ -89,6 +93,16 @@ namespace Rhodium.UI
         public override PropertyDescriptorCollection GetProperties(Attribute[] attributes)
         {
             return GetProperties();
+        }
+
+        public override EventDescriptorCollection GetEvents()
+        {
+            return null;
+        }
+
+        public override EventDescriptorCollection GetEvents(Attribute[] attributes)
+        {
+            return null;
         }
 
         private class UIObjectPropertyDescriptor : PropertyDescriptor
@@ -166,9 +180,7 @@ namespace Rhodium.UI
             if (uiObject == null) return null;
 
             if (!uiObject.valueDict.ContainsKey(propertyName))
-            {
                 return new PSAdaptedProperty(propertyName, null);
-            }
             return new PSAdaptedProperty(propertyName, uiObject.valueDict[propertyName]);
         }
 
@@ -218,13 +230,46 @@ namespace Rhodium.UI
         }
     }
 
-    public class UIObjectCollection : ObservableCollection<UIObject>
+    public class UIObjectCollection : ObservableCollection<UIObject>, INotifyPropertyChanged
     {
+        public new event PropertyChangedEventHandler PropertyChanged;
+
+        public void RaiseCountChanged()
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+        }
+
+        public new void Add(UIObject item)
+        {
+            base.Add(item);
+            RaiseCountChanged();
+        }
+
         public void AddWithDispatcher(UIObject uiObject, System.Windows.Threading.Dispatcher dispatcher)
         {
             dispatcher.BeginInvoke(new Action(() => {
                 base.Add(uiObject);
             }));
+            RaiseCountChanged();
+        }
+
+        public new void Insert(int index, UIObject item)
+        {
+            base.Insert(index, item);
+            RaiseCountChanged();
+        }
+
+        public new void Remove(UIObject item)
+        {
+            base.Remove(item);
+            RaiseCountChanged();
+        }
+
+        public new void Clear()
+        {
+            base.Clear();
+            RaiseCountChanged();
         }
     }
 }
