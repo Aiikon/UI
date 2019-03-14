@@ -166,3 +166,52 @@ Show-UIWindow -Title "Context Menu Samples" -Width 300 -Height 200 {
         }
     }
 }
+
+
+# Interactive GUI Example
+$PingUI = New-UIObject
+$PingUI.ServerList = 'localhost'
+$PingUI.Enabled = $true
+$PingUI.ResultList = New-UIObjectCollection
+
+$PingUI.Scripts = @{}
+$PingUI.Scripts.PingServers = {
+
+    if ([String]::IsNullOrWhiteSpace($PingUI.ServerList))
+    {
+        Show-UIMessageBox "Enter one or more server names first."
+        return
+    }
+    
+    $window = Find-UIParent -Type Window
+    $PingUI.Enabled = $false
+    $PingUI.ResultList.Clear()
+
+    Invoke-UIPowerShell -SetVariables (Get-Variable PingUI, window) -ScriptBlock {
+        trap { $_ | Out-File C:\Users\Justin\Desktop\Errors.txt }
+        $serverList = $PingUI.ServerList -split "`r`n" | ForEach-Object Trim | Where-Object { $_ }
+
+        foreach ($server in $serverList)
+        {
+            $newResult = New-UIObject
+            $newResult.ComputerName = $server
+            $newResult.IsOnline = Test-Connection -ComputerName $server -Count 1 -Quiet
+            $PingUI.ResultList.AddWithDispatcher($newResult, $window.Dispatcher)
+        }
+
+        $PingUI.Enabled = $true
+    }
+}
+
+Show-UIWindow -Title "Server Ping GUI" -Width 600 -Height 500 -DataContext $PingUI {
+    New-UIDockPanel {
+        New-UIDockPanel -Dock Left {
+            New-UITextBlock "Enter Server Names:" -Dock Top -Margin 4,4,4,0
+            New-UIButton "Ping Servers" -Padding 4,2,4,2 -Dock Bottom -Margin 4,0,4,4 -AddClick $PingUI.Scripts.PingServers
+            New-UITextBox -Margin 4 -Width 150 -AcceptsReturn $true -BindTextTo ServerList
+        } |
+            Add-UIBinding -Property IsEnabled -Path Enabled
+
+        New-UIListView -Columns ComputerName, IsOnline -BindItemsSourceTo ResultList -Margin 0,4,4,4
+    }
+}
