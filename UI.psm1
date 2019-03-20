@@ -443,8 +443,7 @@ $Script:NewUIObjectBareTemplate = [string]{
         # %%CustomParamBlock%%
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [object] $DataContext,
-        [Parameter()] [object] $Tag,
-        [Parameter()] [switch] $AsFactory
+        [Parameter()] [object] $Tag
     )
 
     $control = New-Object Rhodium.UI.ObjectType
