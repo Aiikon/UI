@@ -169,13 +169,9 @@ Function Set-UIKnownProperty
         }
         
         # Add children / set content property
-        if ($children -and !$Properties.Contains('Content'))
+        if ($children)
         {
             foreach ($child in $children) { $factory.AppendChild($child) }
-        }
-        elseif ($children)
-        {
-            $factory.SetValue($controlType::ContentProperty, $children)
         }
 
         $factory
