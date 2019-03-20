@@ -141,7 +141,7 @@ Function Set-UIKnownProperty
             if ($Properties.Contains($property)) { $copyPropertyList.Add($property) }
         }
         foreach ($property in $Properties['AlsoSet'].Keys) { $copyPropertyList.Add($propery) }
-        if ($Properties.Contains('Align')) { $copyPropertyList.AddRange(('VerticalAlignment', 'HorizontalAlignment')) }
+        if ($Properties.Contains('Align')) { $copyPropertyList.Add('VerticalAlignment'); $copyPropertyList.Add('HorizontalAlignment') }
         foreach ($copyProperty in $copyPropertyList)
         {
             $factory.SetValue($controlType::"${copyProperty}Property", $Control.$copyProperty)
