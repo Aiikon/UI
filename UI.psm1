@@ -28,6 +28,7 @@ Function Set-UIKnownProperty
     End
     {
         $controlType = $Control.GetType()
+        $asFactory = !!$Properties['AsFactory']
 
         $simplePropertyList = 'Width', 'MinWidth', 'MaxWidth', 'Height', 'MinHeight', 'MaxHeight', # Size Properties
             'DataContext', 'Tag', 'ItemsSource', # Data Properties
@@ -69,8 +70,17 @@ Function Set-UIKnownProperty
         elseif ($Properties.Contains('Child')) { $children = $Properties['Child'] }
         elseif ($Properties.Contains('Items')) { $children = $Properties['Items'] }
         else { $children = $null }
-        if ($children -is [scriptblock]) { $children = & $children }
-        if ($children) { foreach ($child in $children) { $Control.AddChild($child) } }
+        if ($children -is [scriptblock])
+        {
+            $variables = $null
+            if ($asFactory)
+            {
+                $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
+                $variables = New-Object PSVariable PSDefaultParameterValues, $defaultParameterValues
+            }
+            $children = $children.InvokeWithContext($null, $variables, $null)
+        }
+        if ($children -and !$asFactory) { foreach ($child in $children) { $Control.AddChild($child) } }
         
         if ($Properties.Contains('Margin')) { $Control.Margin = New-Object System.Windows.Thickness $Properties['Margin'] }
         if ($Properties.Contains('Padding')) { $Control.Padding = New-Object System.Windows.Thickness $Properties['Padding'] }
@@ -93,7 +103,7 @@ Function Set-UIKnownProperty
         if ($Properties.Contains('ContextMenu'))
         {
             $contextmenu = $Properties['ContextMenu']
-            if ($contextmenu -is [scriptblock]) { $contextmenu = & $contextmenu }
+            if ($contextmenu -is [scriptblock]) { $contextmenu = $contextmenu }
             $Control.ContextMenu = $contextmenu
         }
 
@@ -118,7 +128,57 @@ Function Set-UIKnownProperty
             }
         }
 
-        $Control
+        if (!$asFactory) { return $Control }
+
+        # If in factory mode, make a new factory and copy all properties from the control to the factory
+        $factory = New-Object System.Windows.FrameworkElementFactory $controlType
+
+        # Copy all basic properties
+        $copyPropertyList = New-Object System.Collections.Generic.List[string]
+        $otherSimplePropertyList = 'Margin', 'Padding', 'BorderThickness', 'CornerRadius', 'ContextMenu', 'LayoutTransform'
+        foreach ($property in ($simplePropertyList + $otherSimplePropertyList))
+        {
+            if ($Properties.Contains($property)) { $copyPropertyList.Add($property) }
+        }
+        foreach ($property in $Properties['AlsoSet'].Keys) { $copyPropertyList.Add($propery) }
+        if ($Properties.Contains('Align')) { $copyPropertyList.AddRange(('VerticalAlignment', 'HorizontalAlignment')) }
+        foreach ($copyProperty in $copyPropertyList)
+        {
+            $factory.SetValue($controlType::"${copyProperty}Property", $Control.$copyProperty)
+        }
+
+        # Set advanced properties
+        if ($Properties.Contains('GridRow')) { $factory.SetValue([System.Windows.Controls.Grid]::RowProperty, $Properties['GridRow']) }
+        if ($Properties.Contains('GridRowSpan')) { $factory.SetValue([System.Windows.Controls.Grid]::RowSpanProperty, $Properties['GridRowSpan']) }
+        if ($Properties.Contains('GridCol')) { $factory.SetValue([System.Windows.Controls.Grid]::ColumnProperty, $Properties['GridCol']) }
+        if ($Properties.Contains('GridColSpan')) { $factory.SetValue([System.Windows.Controls.Grid]::ColumnSpanProperty, $Properties['GridColSpan']) }
+        if ($Properties.Contains('Dock')) { $factory.SetValue([System.Windows.Controls.DockPanel]::DockProperty, $Properties['Dock']) }
+
+        # Set bindings and events
+        foreach ($bindProperty in $bindPropertyList)
+        {
+            if (!$Properties.Contains("Bind${bindProperty}To")) { continue }
+            $binding = New-Object System.Windows.Data.Binding $Properties["Bind${bindProperty}To"]
+            $factory.SetBinding($controlType::"${bindProperty}Property", $binding)
+        }
+        foreach ($eventProperty in $eventPropertyList)
+        {
+            if (!$Properties.Contains("${eventProperty}Event")) { continue }
+            $delegate = [System.Windows.RoutedEventHandler]$Properties["${eventProperty}Event"]
+            $factory.AddHandler($controlType::"${eventProperty}Event", $delegate)
+        }
+        
+        # Add children / set content property
+        if ($children -and !$Properties.Contains('Content'))
+        {
+            foreach ($child in $children) { $factory.AppendChild($child) }
+        }
+        elseif ($children)
+        {
+            $factory.SetValue($controlType::ContentProperty, $children)
+        }
+
+        $factory
     }
 }
 
@@ -366,7 +426,8 @@ $Script:NewUIObjectTemplate = [string]{
         [Parameter()] [object] $ContextMenu,
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [object] $DataContext,
-        [Parameter()] [object] $Tag
+        [Parameter()] [object] $Tag,
+        [Parameter()] [switch] $AsFactory
     )
 
     $control = New-Object Rhodium.UI.ObjectType
@@ -380,7 +441,8 @@ $Script:NewUIObjectBareTemplate = [string]{
         # %%CustomParamBlock%%
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [object] $DataContext,
-        [Parameter()] [object] $Tag
+        [Parameter()] [object] $Tag,
+        [Parameter()] [switch] $AsFactory
     )
 
     $control = New-Object Rhodium.UI.ObjectType
