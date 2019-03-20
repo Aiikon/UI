@@ -103,6 +103,7 @@ FunctionsToExport = @(
     'New-UIGrid',
     'New-UIGridSplitter',
     'New-UIGroupBox',
+    'New-UIItemsControl',
     'New-UIScrollViewer',
     'New-UIStackPanel',
     'New-UITabControl',

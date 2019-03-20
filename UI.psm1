@@ -533,6 +533,20 @@ New-UIFunction GroupBox ([System.Windows.Controls.GroupBox]) {
     [Parameter(Position=1)] [object] $Content
 }
 
+New-UIFunction ItemsControl ([System.Windows.Controls.ItemsControl]) {
+    [Parameter(Position=0)] [scriptblock] $ItemTemplate,
+    [Parameter()] [string] $BindItemsSourceTo
+} -CustomScript {
+    if ($ItemTemplate)
+    {
+        $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
+        $dataTemplate = New-Object System.Windows.DataTemplate
+        $dataTemplate.VisualTree = $ItemTemplate.InvokeWithContext($null, (New-Object PSVariable PSDefaultParameterValues, $defaultParameterValues), $null)[0]
+        $control.ItemTemplate = $dataTemplate
+    }
+    Set-UIKnownProperty $control $PSBoundParameters
+}
+
 New-UIFunction ScrollViewer ([System.Windows.Controls.ScrollViewer]) {
     [Parameter(Position=0)] [object] $Content,
     [Parameter()] [System.Windows.Controls.ScrollBarVisibility] $VerticalScrollBarVisibility,
