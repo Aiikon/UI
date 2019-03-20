@@ -215,3 +215,57 @@ Show-UIWindow -Title "Server Ping GUI" -Width 600 -Height 500 -DataContext $Ping
         New-UIListView -Columns ComputerName, IsOnline -BindItemsSourceTo ResultList -Margin 0,4,4,4
     }
 }
+
+
+
+# Service GUI Example
+$ServiceMaster = New-UIObject
+$ServiceMaster.ServiceList = Get-Service | Select-Object Name, DisplayName, Status, StartType | New-UIObjectCollection
+
+Show-UIWindow -Width 900 -Height 500 -Title "Service Manager" -DataContext $ServiceMaster {
+    New-UITabControl -Margin 4 {
+        New-UITabItem "Items Control (Templated)" {
+            New-UIScrollViewer {
+                New-UIItemsControl -BindItemsSourceTo ServiceList -ItemTemplate {
+                    New-UIStackPanel -Margin 2,2,2,12 {
+                        New-UIStackPanel -Margin 2 -Orientation Horizontal {
+                            New-UITextBlock -FontWeight Bold -Text "Service Name: "
+                            New-UITextBlock -BindTextTo Name
+                        }
+                        New-UIStackPanel -Margin 2 -Orientation Horizontal {
+                            New-UITextBlock -FontWeight Bold -Text "Start Type: "
+                            New-UIComboBox -ItemsSource ([Enum]::GetValues([System.ServiceProcess.ServiceStartMode])) -BindSelectedValueTo StartType -Width 100
+                        }
+                    }
+                }
+            }
+        }
+        New-UITabItem "List View (Templated)" {
+            New-UIListView -Margin 4 -BindItemsSourceTo ServiceList -Columns {
+                New-UIGridViewColumn "Service Name" {
+                    New-UIStackPanel -Orientation Horizontal {
+                        New-UITextBlock -BindTextTo Name
+                        New-UITextBlock " ("
+                        New-UITextBlock -BindTextTo DisplayName
+                        New-UITextBlock ")"
+                    }
+                }
+                New-UIGridViewColumn -Header "Start Mode" {
+                    New-UIComboBox -ItemsSource ([Enum]::GetValues([System.ServiceProcess.ServiceStartMode])) -BindSelectedValueTo StartType -Width 100
+                }
+                New-UIGridViewColumn -Header "Status" {
+                    New-UITextBlock -BindTextTo Status
+                }
+                New-UIGridViewColumn -Header "Actions" {
+                    New-UIStackPanel -Orientation Horizontal {
+                        New-UIButton -Margin 2,0,2,0 -Padding 4,1,4,1 "Start" -AddClick { $this.DataContext | Start-Service -Verbose }
+                        New-UIButton -Margin 2,0,2,0 -Padding 4,1,4,1 "Stop" -AddClick { $this.DataContext | Stop-Service -Verbose }
+                    }
+                }
+            }
+        }
+        New-UITabItem "List View (Simple)" {
+            New-UIListView -Margin 4 -BindItemsSourceTo ServiceList -Columns 'Name', 'Status'
+        }
+    }
+}
