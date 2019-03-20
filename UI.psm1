@@ -163,8 +163,8 @@ Function Set-UIKnownProperty
         }
         foreach ($eventProperty in $eventPropertyList)
         {
-            if (!$Properties.Contains("${eventProperty}Event")) { continue }
-            $delegate = [System.Windows.RoutedEventHandler]$Properties["${eventProperty}Event"]
+            if (!$Properties.Contains("Add${eventProperty}")) { continue }
+            $delegate = [System.Windows.RoutedEventHandler]$Properties["Add${eventProperty}"]
             $factory.AddHandler($controlType::"${eventProperty}Event", $delegate)
         }
         
