@@ -97,6 +97,12 @@ Function Set-UIKnownProperty
         {
             $transform = $Properties['LayoutTransform']
             if ($transform -is [scriptblock]) { $transform = & $transform }
+            if (@($transform).Count -gt 1)
+            {
+                $group = New-Object System.Windows.Media.TransformGroup
+                foreach ($child in $transform) { $group.Children.Add($child) }
+                $transform = $group
+            }
             $Control.LayoutTransform = $transform
         }
 
