@@ -646,6 +646,20 @@ New-UIFunction DatePicker ([System.Windows.Controls.DatePicker]) {
     [Parameter()] [string] $BindSelectedDateTo
 }
 
+New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
+    [Parameter(Position=0)] [string] $Header,
+    [Parameter(Position=1)] [scriptblock] $CellTemplate
+} -CustomScript {
+    if ($CellTemplate)
+    {
+        $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
+        $dataTemplate = New-Object System.Windows.DataTemplate
+        $dataTemplate.VisualTree = $CellTemplate.InvokeWithContext($null, (New-Object PSVariable PSDefaultParameterValues, $defaultParameterValues), $null)[0]
+        $control.CellTemplate = $dataTemplate
+    }
+    Set-UIKnownProperty $control $PSBoundParameters
+}
+
 New-UIFunction Label ([System.Windows.Controls.Label]) {
     [Parameter(Position=0)] [object] $Content
 }
@@ -660,13 +674,19 @@ New-UIFunction ListView ([System.Windows.Controls.ListView]) {
     if ($Columns)
     {
         $view = New-Object System.Windows.Controls.GridView
-        foreach ($column in $Columns)
+        $columnList = foreach ($column in $Columns)
         {
-            $gridViewColumn = New-Object System.Windows.Controls.GridViewColumn
-            $gridViewColumn.Header = $column
-            $gridViewColumn.DisplayMemberBinding = New-Object System.Windows.Data.Binding $column
-            $view.Columns.Add($gridViewColumn)
+            if ($column -is [string])
+            {
+                $gridViewColumn = New-Object System.Windows.Controls.GridViewColumn
+                $gridViewColumn.Header = $column
+                $gridViewColumn.DisplayMemberBinding = New-Object System.Windows.Data.Binding $column
+                $gridViewColumn
+                continue
+            }
+            & $column
         }
+        foreach ($column in $columnList) { $view.Columns.Add($column) }
         $control.View = $view
         [void]$PSBoundParameters.Remove('Columns') # Otherwise Set-UIKnownProperty will mess this up
     }
