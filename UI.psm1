@@ -243,7 +243,8 @@ Function Add-UIBinding
     (
         [Parameter(ValueFromPipeline=$true)] [object] $Control,
         [Parameter(Mandatory=$true,Position=0)] [string] $Property,
-        [Parameter(Mandatory=$true,Position=1)] [string] $Path
+        [Parameter(Mandatory=$true,Position=1)] [string] $Path,
+        [Parameter()] [object] $FallbackValue,
         [Parameter()] [ValidateSet('InvertBool', 'BoolToVisibility')] [string[]] $Converter
     )
     Process
@@ -260,6 +261,8 @@ Function Add-UIBinding
         }
 
         $binding = New-Object System.Windows.Data.Binding $Path
+        if ($PSBoundParameters['FallbackValue']) { $binding.FallbackValue = $FallbackValue -as $dp.PropertyType }
+
         if ($Converter)
         {
             if ($Converter.Count -eq 1)
