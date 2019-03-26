@@ -269,3 +269,44 @@ Show-UIWindow -Width 900 -Height 500 -Title "Service Manager" -DataContext $Serv
         }
     }
 }
+
+
+# Indicator Sample
+Show-UIWindow -SizeToContent Width -Title "Contents of Windows Directory" {
+
+    Function New-UIIndicator($Label, $Color, $Text, $Scale = 16, $Nudge = -0.8)
+    {
+        New-UIGrid -Margin 1 {
+            New-UIEllipse -Fill $Color -Width $scale -Height $scale
+            New-UIEllipse -Width ($scale*.85) -Height ($scale*.85) -StrokeThickness ($scale*.06) -Stroke White
+            New-UITextBlock -Text $Text -Align Center -Margin 0,$Nudge,0,0 -FontSize ($scale*.6) -Foreground White -TextAlignment Center
+        } |
+            Add-UIBinding -Property Visibility -Path "${Label}Vis" -FallbackValue Collapsed -Converter BoolToVisibility
+    }
+
+    $itemList = Get-ChildItem C:\Windows |
+        ForEach-Object {
+            $result = $_ | Select-Object Name, LastWriteTime, Length, DirectoryVis, FileVis, ArchiveVis, SystemVis, ReadOnlyVis
+            $result.DirectoryVis = $_.Attributes -match "directory"
+            $result.FileVis = $_.Attributes -notmatch "directory"
+            $result.ArchiveVis = $_.Attributes -match "archive"
+            $result.SystemVis = $_.Attributes -match "system"
+            $result.ReadOnlyVis = $_.Attributes -match "readonly"
+            $result
+        }
+
+    New-UIListView -Margin 4 -ItemsSource $itemList -Columns {
+        New-UIGridViewColumn -Header "Attr" -CellTemplate {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UIIndicator Directory Blue "D"
+                New-UIIndicator File Purple "F"
+                New-UIIndicator Archive DarkCyan "A"
+                New-UIIndicator System Red "S"
+                New-UIIndicator ReadOnly Orange "R"
+            }
+        }
+        New-UIGridViewColumn -Header "Name" -CellTemplate { New-UITextBlock -BindTextTo Name }
+        New-UIGridViewColumn -Header "Last Modified" -CellTemplate { New-UITextBlock -BindTextTo LastWriteTime }
+        New-UIGridViewColumn -Header "Size" -Width 100 -CellTemplate { New-UITextBlock -BindTextTo Length }
+    }
+}
