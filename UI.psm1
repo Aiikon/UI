@@ -196,6 +196,7 @@ Function Add-UIBinding
     {
         if (!$Control) { return }
         $type = $Control.GetType()
+        if ($Control -is [System.Windows.FrameworkElementFactory]) { $type = $Control.Type }
         $dp = $type::"${Property}Property"
         if (!$dp)
         {
@@ -205,7 +206,14 @@ Function Add-UIBinding
         }
 
         $binding = New-Object System.Windows.Data.Binding $Path
-        [void][System.Windows.Data.BindingOperations]::SetBinding($Control, $dp, $binding)
+        if ($Control -is [System.Windows.FrameworkElementFactory])
+        {
+            $Control.SetBinding($dp, $binding)
+        }
+        else
+        {
+            [void][System.Windows.Data.BindingOperations]::SetBinding($Control, $dp, $binding)
+        }
         $Control
     }
 }
