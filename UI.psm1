@@ -1,6 +1,47 @@
 ﻿[void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')
 [void][System.Reflection.Assembly]::LoadWithPartialName('PresentationFramework')
 
+$Script:ReservedParameters = @"
+AsFactory
+Content
+Children
+Child
+Items
+Margin
+Padding
+BorderThickness
+CornerRadius
+GridRow
+GridRowSpan
+GridCol
+GridColSpan
+Dock
+LayoutTransform
+ContextMenu
+Align
+AlsoSet
+ErrorAction
+WarningAction
+Verbose
+Debug
+ErrorVariable
+WarningVariable
+OutVariable
+OutBuffer
+PipelineVariable
+"@ -split "[`r`n]+"
+
+$Script:ReservedParameterDict = @{}
+foreach ($reservedParameter in $Script:ReservedParameters)
+{
+    $Script:ReservedParameterDict[$reservedParameter] = $true
+}
+
+$Script:SimplePropertyDict = @{}
+$Script:BindPropertyDict = @{}
+$Script:EventPropertyDict = @{}
+$Script:ProcessedParameterDict = @{}
+
 Add-Type -ReferencedAssemblies PresentationCore, PresentationFramework, WindowsBase @'
 using System;
 using System.Windows;
@@ -83,38 +124,22 @@ Function Set-UIKnownProperty
         $controlType = $Control.GetType()
         $asFactory = !!$Properties['AsFactory']
 
-        $simplePropertyList = 'Width', 'MinWidth', 'MaxWidth', 'Height', 'MinHeight', 'MaxHeight', # Size Properties
-            'DataContext', 'Tag', 'ItemsSource', # Data Properties
-            'Text', 'Header', 'SelectedIndex', 'AcceptsReturn', # Value Properties
-            'FontSize', 'FontWeight', 'FontStyle', 'FontFamily', 'TextAlignment', # Font Properties
-            'Orientation', 'Stretch', 'VerticalScrollBarVisiblity', 'HorizontalScrollBarVisibility', 'Angle', 'Rows', 'Columns', # Layout Properties
-            'BorderBrush', 'Background', 'Foreground', 'Fill', 'Stroke', # Color Properties
-            'DisplayMemberPath', 'SelectedValuePath', # Path Properties
-            'IsCheckable', 'IsExpanded', 'Minimum', 'Maximum', 'TickPlacement', 'TickFrequency', 'Ticks', 'SelectionMode', 'StrokeThickness', # Other Properties
-            'SizeToContent', 'WindowStyle' # Other Properties
-
-        $bindPropertyList = 'Text', 'IsChecked', 'ItemsSource', 'SelectedValue', 'SelectedDate', 'Maximum', 'Value', 'Content'
-
-        $eventPropertyList = 'Click', 'SelectedItemChanged'
-
-        foreach ($property in $simplePropertyList)
+        foreach ($property in $Properties.Keys)
         {
-            if ($Properties.Contains($property)) { $Control.$property = $Properties[$property] }
-        }
-
-        foreach ($binding in $bindPropertyList)
-        {
-            if ($Properties.Contains("Bind${binding}To"))
+            if ($Script:SimplePropertyDict.Contains($property))
             {
-                [void]$Control.SetBinding($controlType::"${binding}Property", $Properties["Bind${binding}To"])
+                $Control.$property = $Properties[$property]
             }
-        }
-
-        foreach ($event in $eventPropertyList)
-        {
-            if ($Properties.Contains("Add$event"))
+            if ($asFactory) { continue }
+            if ($Script:BindPropertyDict.Contains($property))
             {
-                $Control."Add_$event"($Properties["Add$event"])
+                $bindProperty = $Script:BindPropertyDict[$property]
+                [void]$Control.SetBinding($controlType::"${bindProperty}Property", $Properties[$property])
+            }
+            elseif ($Script:EventPropertyDict.Contains($property))
+            {
+                $eventProperty = $Script:EventPropertyDict[$property]
+                $Control."Add_$eventProperty"($Properties[$property])
             }
         }
         
@@ -195,7 +220,7 @@ Function Set-UIKnownProperty
         # Copy all basic properties
         $copyPropertyList = New-Object System.Collections.Generic.List[string]
         $otherSimplePropertyList = 'Margin', 'Padding', 'BorderThickness', 'CornerRadius', 'ContextMenu', 'LayoutTransform'
-        foreach ($property in ($simplePropertyList + $otherSimplePropertyList))
+        foreach ($property in ($Script:SimplePropertyDict.Keys + $otherSimplePropertyList))
         {
             if ($Properties.Contains($property)) { $copyPropertyList.Add($property) }
         }
@@ -214,17 +239,26 @@ Function Set-UIKnownProperty
         if ($Properties.Contains('Dock')) { $factory.SetValue([System.Windows.Controls.DockPanel]::DockProperty, $Properties['Dock']) }
 
         # Set bindings and events
-        foreach ($bindProperty in $bindPropertyList)
-        {
-            if (!$Properties.Contains("Bind${bindProperty}To")) { continue }
-            $binding = New-Object System.Windows.Data.Binding $Properties["Bind${bindProperty}To"]
-            $factory.SetBinding($controlType::"${bindProperty}Property", $binding)
-        }
         foreach ($eventProperty in $eventPropertyList)
         {
             if (!$Properties.Contains("Add${eventProperty}")) { continue }
             $delegate = [System.Windows.RoutedEventHandler]$Properties["Add${eventProperty}"]
             $factory.AddHandler($controlType::"${eventProperty}Event", $delegate)
+        }
+        foreach ($property in $Properties.Keys)
+        {
+            if ($Script:BindPropertyDict.Contains($property))
+            {
+                $bindProperty = $Script:BindPropertyDict[$property]
+                $binding = New-Object System.Windows.Data.Binding $Properties[$property]
+                $factory.SetBinding($controlType::"${bindProperty}Property", $binding)
+            }
+            elseif ($Script:EventPropertyDict.Contains($property))
+            {
+                $eventProperty = $Script:EventPropertyDict[$property]
+                $delegate = [System.Windows.RoutedEventHandler]$Properties[$property]
+                $factory.AddHandler($controlType::"${eventProperty}Event", $delegate)
+            }
         }
         
         # Add children / set content property
@@ -459,29 +493,35 @@ Function Show-UIWindow
 {
     Param
     (
-        [Parameter(Position=0)] [object] $Content,
-        [Parameter()] [string] $Title,
-        [Parameter()] [double] $Width,
-        [Parameter()] [double] $MinWidth,
-        [Parameter()] [double] $MaxWidth,
-        [Parameter()] [double] $Height,
-        [Parameter()] [double] $MinHeight,
-        [Parameter()] [double] $MaxHeight,
-        [Parameter()] [System.Windows.SizeToContent] $SizeToContent,
-        [Parameter()] [System.Windows.WindowStyle] $WindowStyle,
-        [Parameter()] [object] $DataContext,
-        [Parameter()] [hashtable] $AlsoSet,
-        [Parameter()] [hashtable] $AddEvents
+        [Parameter(ValueFromPipeline=$true,ParameterSetName='Input')] [System.Windows.Window] $Window,
+        [Parameter(Position=0,ParameterSetName='Content')] [object] $Content,
+        [Parameter(ParameterSetName='Content')] [string] $Title,
+        [Parameter(ParameterSetName='Content')] [double] $Width,
+        [Parameter(ParameterSetName='Content')] [double] $MinWidth,
+        [Parameter(ParameterSetName='Content')] [double] $MaxWidth,
+        [Parameter(ParameterSetName='Content')] [double] $Height,
+        [Parameter(ParameterSetName='Content')] [double] $MinHeight,
+        [Parameter(ParameterSetName='Content')] [double] $MaxHeight,
+        [Parameter(ParameterSetName='Content')] [System.Windows.SizeToContent] $SizeToContent,
+        [Parameter(ParameterSetName='Content')] [System.Windows.WindowStyle] $WindowStyle,
+        [Parameter(ParameterSetName='Content')] [object] $DataContext,
+        [Parameter(ParameterSetName='Content')] [hashtable] $AlsoSet
     )
-    $control = New-Object System.Windows.Window
-    if ($Title) { $control.Title = $Title }
-    [System.Windows.Controls.Grid]::SetIsSharedSizeScope($control, $true)
-    foreach ($event in $AddEvents.Keys)
+    Process
     {
-        $Content."Add_$event"($AddEvents[$event])
+        if ($Window)
+        {
+            [void]$Window.Dispatcher.InvokeAsync({ [void]$Window.ShowDialog() }).Wait()
+        }
     }
-    Set-UIKnownProperty $control $PSBoundParameters | Out-Null
-    [void]$control.Dispatcher.InvokeAsync({ [void]$control.ShowDialog() }).Wait()
+    End
+    {
+        if ($Window) { return }
+        $control = New-Object System.Windows.Window
+        [System.Windows.Controls.Grid]::SetIsSharedSizeScope($control, $true)
+        Set-UIKnownProperty $control $PSBoundParameters | Out-Null
+        [void]$control.Dispatcher.InvokeAsync({ [void]$control.ShowDialog() }).Wait()
+    }
 }
 
 # ======================================================================================================================
@@ -542,7 +582,8 @@ Function New-UIFunction
         [Parameter(Mandatory=$true,Position=1)] [type] $ObjectType,
         [Parameter(Mandatory=$true,Position=2)] [string] $ParamBlock,
         [Parameter()] [string] $CustomScript,
-        [Parameter()] [switch] $BareTemplate
+        [Parameter()] [switch] $BareTemplate,
+        [Parameter()] [string[]] $PrivateParameters
     )
     $script = $CustomScript
     if (!$CustomScript) { $script = 'Set-UIKnownProperty $control $PSBoundParameters' }
@@ -553,6 +594,7 @@ Function New-UIFunction
         ParamBlock = $ParamBlock
         Script = $script
         BareTemplate = $BareTemplate.IsPresent
+        PrivateParameters = $PrivateParameters
     }
     $Script:FunctionList.Add($Script:Function)
 }
@@ -560,6 +602,17 @@ Function New-UIFunction
 # -------------------------------------------------------
 # Containers
 # -------------------------------------------------------
+
+New-UIFunction Window ([System.Windows.Window]) {
+        [Parameter(Position=0)] [object] $Content,
+        [Parameter()] [string] $Title,
+        [Parameter()] [System.Windows.SizeToContent] $SizeToContent,
+        [Parameter()] [System.Windows.WindowStyle] $WindowStyle
+} -CustomScript {
+    $control = New-Object System.Windows.Window
+    [System.Windows.Controls.Grid]::SetIsSharedSizeScope($control, $true)
+    Set-UIKnownProperty $control $PSBoundParameters
+}
 
 New-UIFunction Border ([System.Windows.Controls.Border]) {
     [Parameter(Position=0)] [object] $Child,
@@ -583,7 +636,7 @@ New-UIFunction Grid ([System.Windows.Controls.Grid]) {
     [Parameter()] [string[]] $RowDefGroup,
     [Parameter()] [string[]] $ColDef,
     [Parameter()] [string[]] $ColDefGroup
-} -CustomScript {
+} -PrivateParameters RowDef, RowDefGroup, ColDef, ColDefGroup -CustomScript {
     foreach ($def in $RowDef)
     {
         $row = New-Object System.Windows.Controls.RowDefinition
@@ -619,7 +672,7 @@ New-UIFunction GroupBox ([System.Windows.Controls.GroupBox]) {
 New-UIFunction ItemsControl ([System.Windows.Controls.ItemsControl]) {
     [Parameter(Position=0)] [scriptblock] $ItemTemplate,
     [Parameter()] [string] $BindItemsSourceTo
-} -CustomScript {
+} -PrivateParameters ItemTemplate -CustomScript {
     if ($ItemTemplate)
     {
         $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
@@ -752,7 +805,7 @@ New-UIFunction Ellipse ([System.Windows.Shapes.Ellipse]) {
 New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
     [Parameter(Position=0)] [string] $Header,
     [Parameter(Position=1)] [scriptblock] $CellTemplate
-} -CustomScript {
+} -PrivateParameters CellTemplate -CustomScript {
     if ($CellTemplate)
     {
         $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
@@ -854,7 +907,7 @@ New-UIFunction RotateTransform ([System.Windows.Media.RotateTransform]) -BareTem
 
 New-UIFunction ScaleTransform ([System.Windows.Media.ScaleTransform]) -BareTemplate {
     [Parameter()] [double] $Scale
-} -CustomScript {
+} -PrivateParameters Scale -CustomScript {
     if ($Scale) { $control.ScaleX = $Scale; $control.ScaleY = $Scale }
     Set-UIKnownProperty $control $PSBoundParameters
 }
@@ -869,6 +922,32 @@ foreach ($function in $Script:FunctionList)
         $functionText = $functionText.Replace("# %%CustomParamBlock%%", $function.ParamBlock + ",")
     }
     $functionText = $functionText.Replace("# %%SetScript%%", $function.Script)
+    $functionScript = [ScriptBlock]::Create($functionText)
+    New-Item -Path "Function:\New-UI$($function.ObjectName)" -Value $functionScript
 
-    New-Item -Path "Function:\New-UI$($function.ObjectName)" -Value ([ScriptBlock]::Create($functionText))
+    $bindRegex = [regex]"\ABind(.+)To\Z"
+    $eventRegex = [regex]"\AAdd(.+)\Z"
+    $parameterDict = (Get-Command -Name "New-UI$($function.ObjectName)").Parameters
+    foreach ($parameter in $parameterDict.Keys)
+    {
+        if ($Script:ProcessedParameterDict[$parameter] -or $Script:ReservedParameterDict[$parameter]) { continue }
+        if ($parameter -in $function.PrivateParameters) { continue }
+        $Script:ProcessedParameterDict[$parameter] = $true
+
+        $bindMatch = $bindRegex.Match($parameter)
+        if ($bindMatch.Success -and $parameterDict[$parameter].ParameterType -eq [string])
+        {
+            $Script:BindPropertyDict[$parameter] = $bindMatch.Groups[1].Value
+            continue
+        }
+
+        $eventMatch = $eventRegex.Match($parameter)
+        if ($eventMatch.Success -and $parameterDict[$parameter].ParameterType -eq [scriptblock])
+        {
+            $Script:EventPropertyDict[$parameter] = $eventMatch.Groups[1].Value
+            continue
+        }
+
+        $Script:SimplePropertyDict[$parameter] = $true
+    }
 }

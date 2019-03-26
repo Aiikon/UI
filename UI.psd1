@@ -97,6 +97,7 @@ FunctionsToExport = @(
     'Add-UIEvent',
     'Find-UIParent',
     'Show-UIMessageBox',
+    'New-UIWindow',
     'New-UIBorder',
     'New-UIContentControl',
     'New-UIDockPanel',
