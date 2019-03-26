@@ -86,7 +86,7 @@ Function Set-UIKnownProperty
         $simplePropertyList = 'Width', 'MinWidth', 'MaxWidth', 'Height', 'MinHeight', 'MaxHeight', # Size Properties
             'DataContext', 'Tag', 'ItemsSource', # Data Properties
             'Text', 'Header', 'SelectedIndex', 'AcceptsReturn', # Value Properties
-            'FontSize', 'FontWeight', 'FontStyle', 'FontFamily', # Font Properties
+            'FontSize', 'FontWeight', 'FontStyle', 'FontFamily', 'TextAlignment', # Font Properties
             'Orientation', 'Stretch', 'VerticalScrollBarVisiblity', 'HorizontalScrollBarVisibility', 'Angle', 'Rows', 'Columns', # Layout Properties
             'BorderBrush', 'Background', 'Foreground', # Color Properties
             'DisplayMemberPath', 'SelectedValuePath', # Path Properties
@@ -827,6 +827,8 @@ New-UIFunction TextBlock ([System.Windows.Controls.TextBlock]) {
     [Parameter()] [object] $FontWeight,
     [Parameter()] [object] $FontStyle,
     [Parameter()] [object] $FontFamily,
+    [Parameter()] [System.Windows.TextAlignment] $TextAlignment,
+    [Parameter()] [System.Windows.Media.Brush] $Foreground,
     [Parameter()] [string] $BindTextTo
 }
 
