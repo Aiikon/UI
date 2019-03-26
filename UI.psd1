@@ -121,6 +121,7 @@ FunctionsToExport = @(
     'New-UIComboBox',
     'New-UIDataGrid',
     'New-UIDatePicker',
+    'New-UIEllipse',
     'New-UIGridViewColumn',
     'New-UILabel',
     'New-UIListView',

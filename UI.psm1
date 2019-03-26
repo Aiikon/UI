@@ -88,9 +88,9 @@ Function Set-UIKnownProperty
             'Text', 'Header', 'SelectedIndex', 'AcceptsReturn', # Value Properties
             'FontSize', 'FontWeight', 'FontStyle', 'FontFamily', 'TextAlignment', # Font Properties
             'Orientation', 'Stretch', 'VerticalScrollBarVisiblity', 'HorizontalScrollBarVisibility', 'Angle', 'Rows', 'Columns', # Layout Properties
-            'BorderBrush', 'Background', 'Foreground', # Color Properties
+            'BorderBrush', 'Background', 'Foreground', 'Fill', 'Stroke', # Color Properties
             'DisplayMemberPath', 'SelectedValuePath', # Path Properties
-            'IsCheckable', 'IsExpanded', 'Minimum', 'Maximum', 'TickPlacement', 'TickFrequency', 'Ticks', 'SelectionMode', # Other Properties
+            'IsCheckable', 'IsExpanded', 'Minimum', 'Maximum', 'TickPlacement', 'TickFrequency', 'Ticks', 'SelectionMode', 'StrokeThickness', # Other Properties
             'SizeToContent', 'WindowStyle' # Other Properties
 
         $bindPropertyList = 'Text', 'IsChecked', 'ItemsSource', 'SelectedValue', 'SelectedDate', 'Maximum', 'Value', 'Content'
@@ -741,6 +741,12 @@ New-UIFunction DataGrid ([System.Windows.Controls.DataGrid]) {
 
 New-UIFunction DatePicker ([System.Windows.Controls.DatePicker]) {
     [Parameter()] [string] $BindSelectedDateTo
+}
+
+New-UIFunction Ellipse ([System.Windows.Shapes.Ellipse]) {
+    [Parameter()] [System.Windows.Media.Brush] $Fill,
+    [Parameter()] [System.Windows.Media.Brush] $Stroke,
+    [Parameter()] [double] $StrokeThickness
 }
 
 New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
