@@ -1,7 +1,13 @@
 ﻿[void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')
 [void][System.Reflection.Assembly]::LoadWithPartialName('PresentationFramework')
 
-Add-Type @'
+Add-Type -ReferencedAssemblies PresentationCore, PresentationFramework, WindowsBase @'
+using System;
+using System.Windows;
+using System.Windows.Data;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Rhodium.UI
 {
     public enum Align
@@ -11,6 +17,53 @@ namespace Rhodium.UI
             CenterLeft, CenterRight, Center, CenterStretch,
             StretchLeft, StretchRight, StretchCenter, Stretch
     };
+
+    public class ValueConverterGroup : List<IValueConverter>, IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return this.Aggregate(value, (current, converter) => converter.Convert(current, targetType, parameter, culture));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class InvertBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var castValue = value as bool?;
+            if (castValue == null || castValue.Value == false)
+                return true;
+            else
+                return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BoolToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var castValue = value as bool?;
+            if (castValue == null || castValue.Value == false)
+                return System.Windows.Visibility.Collapsed;
+            else
+                return System.Windows.Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
 '@
 
@@ -191,6 +244,7 @@ Function Add-UIBinding
         [Parameter(ValueFromPipeline=$true)] [object] $Control,
         [Parameter(Mandatory=$true,Position=0)] [string] $Property,
         [Parameter(Mandatory=$true,Position=1)] [string] $Path
+        [Parameter()] [ValidateSet('InvertBool', 'BoolToVisibility')] [string[]] $Converter
     )
     Process
     {
@@ -206,6 +260,23 @@ Function Add-UIBinding
         }
 
         $binding = New-Object System.Windows.Data.Binding $Path
+        if ($Converter)
+        {
+            if ($Converter.Count -eq 1)
+            {
+                $finalConverter = New-Object "Rhodium.UI.${Converter}Converter"
+            }
+            else
+            {
+                $finalConverter = New-Object Rhodium.UI.ValueConverterGroup
+                foreach ($converterName in $Converter)
+                {
+                    $finalConverter.Add((New-Object "Rhodium.UI.${converterName}Converter"))
+                }
+            }
+            $binding.Converter = $finalConverter
+        }
+
         if ($Control -is [System.Windows.FrameworkElementFactory])
         {
             $Control.SetBinding($dp, $binding)
