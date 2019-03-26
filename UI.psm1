@@ -162,7 +162,7 @@ Function Set-UIKnownProperty
         if ($Properties.Contains('ContextMenu'))
         {
             $contextmenu = $Properties['ContextMenu']
-            if ($contextmenu -is [scriptblock]) { $contextmenu = $contextmenu }
+            if ($contextmenu -is [scriptblock]) { $contextmenu = & $contextmenu }
             $Control.ContextMenu = $contextmenu
         }
 
