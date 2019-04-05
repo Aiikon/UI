@@ -820,6 +820,15 @@ New-UIFunction Label ([System.Windows.Controls.Label]) {
     [Parameter(Position=0)] [object] $Content
 }
 
+New-UIFunction Line ([System.Windows.Shapes.Line]) {
+    [Parameter()] [double] $X1,
+    [Parameter()] [double] $Y1,
+    [Parameter()] [double] $X2,
+    [Parameter()] [double] $Y2,
+    [Parameter()] [double] $StrokeThickness,
+    [Parameter()] [System.Windows.Media.Brush] $Stroke
+}
+
 New-UIFunction ListView ([System.Windows.Controls.ListView]) {
     [Parameter()] [object[]] $Columns,
     [Parameter()] [object[]] $ItemsSource,
@@ -853,6 +862,20 @@ New-UIFunction PasswordBox ([System.Windows.Controls.PasswordBox]) {
     
 }
 
+New-UIFunction Polyline ([System.Windows.Shapes.Polyline]) {
+    [Parameter(Mandatory=$true)] [double[]] $Points,
+    [Parameter()] [double] $StrokeThickness,
+    [Parameter()] [System.Windows.Media.Brush] $Stroke
+} -CustomScript {
+    for ($i = 0; $i -lt $Points.Count; $i+=2)
+    {
+        $point = New-Object System.Windows.Point $Points[$i], $Points[$i+1]
+        $control.Points.Add($point)
+    }
+    [void]$PSBoundParameters.Remove('Points')
+    Set-UIKnownProperty $control $PSBoundParameters
+}
+
 New-UIFunction ProgressBar ([System.Windows.Controls.ProgressBar]) {
     [Parameter()] [double] $Minimum,
     [Parameter()] [double] $Maximum,
@@ -863,6 +886,12 @@ New-UIFunction ProgressBar ([System.Windows.Controls.ProgressBar]) {
 New-UIFunction RadioButton ([System.Windows.Controls.RadioButton]) {
     [Parameter(Position=0)] [object] $Content,
     [Parameter()] [string] $BindIsCheckedTo
+}
+
+New-UIFunction Rectangle ([System.Windows.Shapes.Rectangle]) {
+    [Parameter()] [System.Windows.Media.Brush] $Fill,
+    [Parameter()] [System.Windows.Media.Brush] $Stroke,
+    [Parameter()] [double] $StrokeThickness
 }
 
 New-UIFunction RichTextBox ([System.Windows.Controls.RichTextBox]) {
