@@ -163,7 +163,7 @@ Function Set-UIKnownProperty
         if ($Properties.Contains('Margin')) { $Control.Margin = New-Object System.Windows.Thickness $Properties['Margin'] }
         if ($Properties.Contains('Padding')) { $Control.Padding = New-Object System.Windows.Thickness $Properties['Padding'] }
         if ($Properties.Contains('BorderThickness')) { $Control.BorderThickness = New-Object System.Windows.Thickness $Properties['BorderThickness'] }
-        if ($Properties.Contains('CornerRadius')) { $Control.CornerRadius = New-Object System.Windows.Thickness $Properties['CornerRadius'] }
+        if ($Properties.Contains('CornerRadius')) { $Control.CornerRadius = New-Object System.Windows.CornerRadius $Properties['CornerRadius'] }
         
         if ($Properties.Contains('GridRow')) { [System.Windows.Controls.Grid]::SetRow($Control, $Properties['GridRow']) }
         if ($Properties.Contains('GridRowSpan')) { [System.Windows.Controls.Grid]::SetRowSpan($Control, $Properties['GridRowSpan']) }
@@ -618,7 +618,7 @@ New-UIFunction Border ([System.Windows.Controls.Border]) {
     [Parameter(Position=0)] [object] $Child,
     [Parameter()] [System.Windows.Media.Brush] $BorderBrush,
     [Parameter()] [double[]] $BorderThickness,
-    [Parameter()] [double[]] $BorderRadius
+    [Parameter()] [double[]] $CornerRadius
 }
 
 New-UIFunction ContentControl ([System.Windows.Controls.ContentControl]) {
