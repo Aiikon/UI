@@ -617,6 +617,7 @@ New-UIFunction Window ([System.Windows.Window]) {
 New-UIFunction Border ([System.Windows.Controls.Border]) {
     [Parameter(Position=0)] [object] $Child,
     [Parameter()] [System.Windows.Media.Brush] $BorderBrush,
+    [Parameter()] [System.Windows.Media.Brush] $Background,
     [Parameter()] [double[]] $BorderThickness,
     [Parameter()] [double[]] $CornerRadius
 }
