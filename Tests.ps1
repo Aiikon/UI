@@ -348,13 +348,17 @@ Show-UIWindow -Width 500 -Height 300 -Title "Brush Sample" {
             (0.8,100,168,212,179)
         New-UIRectangle -Margin 5 (New-UISolidColorBrush -RGB 150, 110, 20)
         New-UIRectangle -Margin 5 (New-UILinearGradientBrush -StartPoint 0,0 -EndPoint 1,1 -GradientStops $simpleStops)
-        New-UIGrid {
-            New-UITextBlock -Align Center "Some Background Text" -FontSize 20
-            New-UIRectangle -Margin 5 (New-UISolidColorBrush -ARGB 150,255,0,0)
+        New-UIGrid -Margin 5 {
+            New-UIViewbox -Margin 5 {
+                New-UITextBlock -Align Center "Some Background Text"
+            }
+            New-UIRectangle (New-UISolidColorBrush -ARGB 150,255,0,0)
         }
-        New-UIGrid {
-            New-UITextBlock -Align Center "Some Background Text" -FontSize 20
-            New-UIRectangle -Margin 5 (New-UILinearGradientBrush -StartPoint 0,0 -EndPoint 1,0 -GradientStops $otherStops)
+        New-UIGrid -Margin 5 {
+            New-UIViewbox -Margin 5 {
+                New-UITextBlock -Align Center "Some Background Text"
+            }
+            New-UIRectangle (New-UILinearGradientBrush -StartPoint 0,0 -EndPoint 1,0 -GradientStops $otherStops)
         }
     }
 }
