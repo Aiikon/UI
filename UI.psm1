@@ -918,8 +918,8 @@ New-UIFunction TreeViewItem ([System.Windows.Controls.TreeViewItem]) {
 
 New-UIFunction UniformGrid ([System.Windows.Controls.Primitives.UniformGrid]) {
     [Parameter(Position=0)] [object] $Children,
-    [Parameter()] [int[]] $Rows,
-    [Parameter()] [int[]] $Columns
+    [Parameter()] [int] $Rows,
+    [Parameter()] [int] $Columns
 }
 
 New-UIFunction Viewbox ([System.Windows.Controls.Viewbox]) {
