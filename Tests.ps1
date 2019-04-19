@@ -310,3 +310,29 @@ Show-UIWindow -SizeToContent Width -Title "Contents of Windows Directory" {
         New-UIGridViewColumn -Header "Size" -Width 100 -CellTemplate { New-UITextBlock -BindTextTo Length }
     }
 }
+
+
+# Style Sample
+Show-UIWindow -Width 500 -Height 400 -Title "Style Sample" {
+    $textStyle = New-UIStyle {
+        New-UITrigger Text "CSC" {
+            New-UISetter Foreground Red
+        }
+        New-UIDataTrigger Attributes Directory {
+            New-UISetter FontStyle Italic
+        }
+    }
+    New-UIDockPanel {
+        New-UITextBlock -Dock Top -Text "Style Sample" -Margin 4 -Style {
+            New-UISetter -Property FontSize -Value 18
+        }
+        New-UIListView -ItemsSource (Get-ChildItem C:\Windows) -Margin 4 -Columns {
+            New-UIGridViewColumn -Header Name -CellTemplate {
+                New-UITextBlock -BindTextTo Name -Style $textStyle
+            }
+            New-UIGridViewColumn -Header Attributes -CellTemplate {
+                New-UITextBlock -BindTextTo Attributes -Style $textStyle
+            }
+        }
+    }
+}

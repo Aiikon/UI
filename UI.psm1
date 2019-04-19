@@ -18,6 +18,7 @@ GridColSpan
 Dock
 LayoutTransform
 ContextMenu
+Style
 Align
 AlsoSet
 ErrorAction
@@ -191,6 +192,13 @@ Function Set-UIKnownProperty
             $Control.ContextMenu = $contextmenu
         }
 
+        if ($Properties.Contains('Style'))
+        {
+            $style = $Properties['Style']
+            if ($style -is [scriptblock]) { $style = New-UIStyle $style }
+            $Control.Style = Get-UIStyleFinalized $style $controlType
+        }
+
         if ($Properties.Contains('Align'))
         {
             $align = $Properties['Align']
@@ -216,10 +224,10 @@ Function Set-UIKnownProperty
 
         # If in factory mode, make a new factory and copy all properties from the control to the factory
         $factory = New-Object System.Windows.FrameworkElementFactory $controlType
-
+        
         # Copy all basic properties
         $copyPropertyList = New-Object System.Collections.Generic.List[string]
-        $otherSimplePropertyList = 'Margin', 'Padding', 'BorderThickness', 'CornerRadius', 'ContextMenu', 'LayoutTransform'
+        $otherSimplePropertyList = 'Margin', 'Padding', 'BorderThickness', 'CornerRadius', 'ContextMenu', 'Style', 'LayoutTransform'
         foreach ($property in ($Script:SimplePropertyDict.Keys + $otherSimplePropertyList))
         {
             if ($Properties.Contains($property)) { $copyPropertyList.Add($property) }
@@ -485,6 +493,136 @@ Function Show-UIMessageBox
     }
 }
 
+Function New-UIStyle
+{
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=0)] [scriptblock] $Definition
+    )
+    End
+    {
+        $def = [ordered]@{}
+        $def.Type = 'WpfStyle'
+        $def.Definition = & $Definition
+        $def.FinalizeDict = @{}
+        [pscustomobject]$def
+    }
+}
+
+Function New-UISetter
+{
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=0)] [string] $Property,
+        [Parameter(Mandatory=$true,Position=1)] [object] $Value
+    )
+    End
+    {
+        $def = [ordered]@{}
+        $def.Type = 'WpfSetter'
+        $def.Property = $Property
+        $def.Value = $Value
+        [pscustomobject]$def
+    }
+}
+
+Function New-UITrigger
+{
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=0)] [string] $Property,
+        [Parameter(Mandatory=$true,Position=1)] [object] $Value,
+        [Parameter(Mandatory=$true,Position=2)] [scriptblock] $Definition
+    )
+    End
+    {
+        $def = [ordered]@{}
+        $def.Type = 'WpfTrigger'
+        $def.Property = $Property
+        $def.Value = $Value
+        $def.Definition = & $Definition
+        [pscustomobject]$def
+    }
+}
+
+Function New-UIDataTrigger
+{
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=0)] [string] $Path,
+        [Parameter(Mandatory=$true,Position=1)] [object] $Value,
+        [Parameter(Mandatory=$true,Position=2)] [scriptblock] $Definition
+    )
+    End
+    {
+        $def = [ordered]@{}
+        $def.Type = 'WpfDataTrigger'
+        $def.Path = $Path
+        $def.Value = $Value
+        $def.Definition = & $Definition
+        [pscustomobject]$def
+    }
+}
+
+Function Get-UIStyleFinalized
+{
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=0)] [object] $UIStyle,
+        [Parameter(Mandatory=$true,Position=1)] [type] $Type
+    )
+    End
+    {
+        if ($UIStyle.FinalizeDict.Contains($Type))
+        {
+            return $UIStyle.FinalizeDict[$Type]
+        }
+
+        $style = New-Object System.Windows.Style
+        $style.TargetType = $Type
+
+        foreach ($item in $UIStyle.Definition)
+        {
+            if ($item.Type -eq 'WpfSetter')
+            {
+                $setter = New-Object System.Windows.Setter
+                $setter.Property = $Type::"$($item.Property)Property"
+                $setter.Value = $item.Value -as $setter.Property.PropertyType
+                $style.Setters.Add($setter)
+            }
+            elseif ($item.Type -in 'WpfTrigger', 'WpfDataTrigger')
+            {
+                if ($item.Type -eq 'WpfTrigger')
+                {
+                    $trigger = New-Object System.Windows.Trigger
+                    $trigger.Property = $Type::"$($item.Property)Property"
+                    $trigger.Value = $item.Value -as $trigger.Property.PropertyType
+                }
+                elseif ($item.Type -eq 'WpfDataTrigger')
+                {
+                    $trigger = New-Object System.Windows.DataTrigger
+                    $trigger.Binding = New-Object System.Windows.Data.Binding $item.Path
+                    $trigger.Value = $item.Value
+                }
+                foreach ($subItem in $item.Definition)
+                {
+                    if ($subItem.Type -eq 'WpfSetter')
+                    {
+                        $setter = New-Object System.Windows.Setter
+                        $setter.Property = $Type::"$($subItem.Property)Property"
+                        $setter.Value = $subItem.Value -as $setter.Property.PropertyType
+                        $trigger.Setters.Add($setter)
+                    }
+                }
+                $style.Triggers.Add($trigger)
+            }
+        }
+
+        $UIStyle.FinalizeDict[$Type] = $style
+        return $style
+    }
+}
+
 # ======================================================================================================================
 # Manual Functions
 # ======================================================================================================================
@@ -551,6 +689,7 @@ $Script:NewUIObjectTemplate = [string]{
         [Parameter()] [hashtable] $AlsoSet,
         [Parameter()] [object] $DataContext,
         [Parameter()] [object] $Tag,
+        [Parameter()] [object] $Style,
         [Parameter()] [switch] $AsFactory
     )
 
