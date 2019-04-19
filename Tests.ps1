@@ -336,3 +336,25 @@ Show-UIWindow -Width 500 -Height 400 -Title "Style Sample" {
         }
     }
 }
+
+
+# Brush Sample
+Show-UIWindow -Width 500 -Height 300 -Title "Brush Sample" {
+    New-UIUniformGrid {
+        $simpleStops = (0, 'Red'),
+            (0.5, 'Green'),
+            (1, 'Blue')
+        $otherStops = (0.2,255,154,56),
+            (0.8,100,168,212,179)
+        New-UIRectangle -Margin 5 (New-UISolidColorBrush -RGB 150, 110, 20)
+        New-UIRectangle -Margin 5 (New-UILinearGradientBrush -StartPoint 0,0 -EndPoint 1,1 -GradientStops $simpleStops)
+        New-UIGrid {
+            New-UITextBlock -Align Center "Some Background Text" -FontSize 20
+            New-UIRectangle -Margin 5 (New-UISolidColorBrush -ARGB 150,255,0,0)
+        }
+        New-UIGrid {
+            New-UITextBlock -Align Center "Some Background Text" -FontSize 20
+            New-UIRectangle -Margin 5 (New-UILinearGradientBrush -StartPoint 0,0 -EndPoint 1,0 -GradientStops $otherStops)
+        }
+    }
+}

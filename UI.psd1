@@ -101,6 +101,8 @@ FunctionsToExport = @(
     'New-UISetter',
     'New-UITrigger',
     'New-UIDataTrigger',
+    'New-UISolidColorBrush',
+    'New-UILinearGradientBrush',
     'New-UIWindow',
     'New-UIBorder',
     'New-UIContentControl',

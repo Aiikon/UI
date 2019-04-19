@@ -623,6 +623,67 @@ Function Get-UIStyleFinalized
     }
 }
 
+Function New-UISolidColorBrush
+{
+    [OutputType([System.Windows.Media.SolidColorBrush])]
+    [CmdletBinding(DefaultParameterSetName='RGB')]
+    Param
+    (
+        [Parameter(Mandatory=$true,ParameterSetName='RGB')] [ValidateCount(3,3)] [byte[]] $RGB,
+        [Parameter(Mandatory=$true,ParameterSetName='ARGB')] [ValidateCount(4,4)] [byte[]] $ARGB
+    )
+    End
+    {
+        if ($RGB) { $color = [System.Windows.Media.Color]::FromRgb($RGB[0], $RGB[1], $RGB[2]) }
+        elseif ($ARGB) { $color = [System.Windows.Media.Color]::FromArgb($ARGB[0], $ARGB[1], $ARGB[2], $ARGB[3]) }
+        New-Object System.Windows.Media.SolidColorBrush $color
+    }
+}
+
+Function New-UILinearGradientBrush
+{
+    [OutputType([System.Windows.Media.LinearGradientBrush])]
+    Param
+    (
+        [Parameter(Mandatory=$true)] [ValidateCount(2,2)] [double[]] $StartPoint,
+        [Parameter(Mandatory=$true)] [ValidateCount(2,2)] [double[]] $EndPoint,
+        [Parameter(Mandatory=$true)] [object[]] $GradientStops
+
+    )
+    End
+    {
+        trap { $PSCmdlet.ThrowTerminatingError($_) }
+        $brush = New-Object System.Windows.Media.LinearGradientBrush
+        $brush.StartPoint = New-Object System.Windows.Point $StartPoint
+        $brush.EndPoint = New-Object System.Windows.Point $EndPoint
+
+        foreach ($stopArray in $GradientStops)
+        {
+            $gradientStop = New-Object System.Windows.Media.GradientStop
+            $gradientStop.Offset = $stopArray[0]
+            if ($stopArray.Count -eq 2)
+            {
+                $gradientStop.Color = $stopArray[1]
+            }
+            elseif ($stopArray.Count -eq 4)
+            {
+                $gradientStop.Color = [System.Windows.Media.Color]::FromRgb($stopArray[1], $stopArray[2], $stopArray[3])
+            }
+            elseif ($stopArray.Count -eq 5)
+            {
+                $gradientStop.Color = [System.Windows.Media.Color]::FromArgb($stopArray[1], $stopArray[2], $stopArray[3], $stopArray[4])
+            }
+            else
+            {
+                throw "GradientStop must be an array of arrays, each containing the Offset followed by a Color, RGB or ARBG values."
+            }
+            $brush.GradientStops.Add($gradientStop)
+        }
+
+        $brush
+    }
+}
+
 # ======================================================================================================================
 # Manual Functions
 # ======================================================================================================================
