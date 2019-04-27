@@ -701,6 +701,8 @@ Function Show-UIWindow
         [Parameter(ParameterSetName='Content')] [double] $Height,
         [Parameter(ParameterSetName='Content')] [double] $MinHeight,
         [Parameter(ParameterSetName='Content')] [double] $MaxHeight,
+        [Parameter(ParameterSetName='Content')] [scriptblock] $AddLoaded,
+        [Parameter(ParameterSetName='Content')] [scriptblock] $AddClosing,
         [Parameter(ParameterSetName='Content')] [System.Windows.SizeToContent] $SizeToContent,
         [Parameter(ParameterSetName='Content')] [System.Windows.WindowStyle] $WindowStyle,
         [Parameter(ParameterSetName='Content')] [object] $DataContext,
@@ -807,7 +809,9 @@ New-UIFunction Window ([System.Windows.Window]) {
         [Parameter(Position=0)] [object] $Content,
         [Parameter()] [string] $Title,
         [Parameter()] [System.Windows.SizeToContent] $SizeToContent,
-        [Parameter()] [System.Windows.WindowStyle] $WindowStyle
+        [Parameter()] [System.Windows.WindowStyle] $WindowStyle,
+        [Parameter()] [scriptblock] $AddLoaded,
+        [Parameter()] [scriptblock] $AddClosing
 } -CustomScript {
     $control = New-Object System.Windows.Window
     [System.Windows.Controls.Grid]::SetIsSharedSizeScope($control, $true)
