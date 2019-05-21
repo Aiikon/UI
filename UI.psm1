@@ -1159,6 +1159,8 @@ New-UIFunction TextBox ([System.Windows.Controls.TextBox]) {
     [Parameter()] [object] $FontFamily,
     [Parameter()] [string] $BindTextTo,
     [Parameter()] [bool] $AcceptsReturn,
+    [Parameter()] [bool] $IsReadOnly,
+    [Parameter()] [int] $MinLines,
     [Parameter()] [System.Windows.Controls.ScrollBarVisibility] $VerticalScrollBarVisibility
 }
 
