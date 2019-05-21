@@ -1036,13 +1036,17 @@ New-UIFunction Ellipse ([System.Windows.Shapes.Ellipse]) {
 
 New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
     [Parameter(Position=0)] [object] $Header,
-    [Parameter(Position=1)] [scriptblock] $CellTemplate
+    [Parameter(Position=1)] [object] $CellTemplate
 } -PrivateParameters CellTemplate -CustomScript {
     if ($CellTemplate)
     {
-        $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
+        if ($CellTemplate -is [scriptblock])
+        {
+            $defaultParameterValues = New-Object System.Management.Automation.DefaultParameterDictionary @{"New-UI*:AsFactory"=$true}
+            $CellTemplate = $CellTemplate.InvokeWithContext($null, (New-Object PSVariable PSDefaultParameterValues, $defaultParameterValues), $null)[0]
+        }
         $dataTemplate = New-Object System.Windows.DataTemplate
-        $dataTemplate.VisualTree = $CellTemplate.InvokeWithContext($null, (New-Object PSVariable PSDefaultParameterValues, $defaultParameterValues), $null)[0]
+        $dataTemplate.VisualTree = $CellTemplate
         $control.CellTemplate = $dataTemplate
     }
     Set-UIKnownProperty $control $PSBoundParameters
