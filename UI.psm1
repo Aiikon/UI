@@ -1186,7 +1186,7 @@ foreach ($function in $Script:FunctionList)
     }
     $functionText = $functionText.Replace("# %%SetScript%%", $function.Script)
     $functionScript = [ScriptBlock]::Create($functionText)
-    New-Item -Path "Function:\New-UI$($function.ObjectName)" -Value $functionScript
+    New-Item -Path "Function:\New-UI$($function.ObjectName)" -Value $functionScript -Force
 
     $bindRegex = [regex]"\ABind(.+)To\Z"
     $eventRegex = [regex]"\AAdd(.+)\Z"
