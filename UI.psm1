@@ -477,6 +477,33 @@ Function Find-UIParent
     }
 }
 
+Function Get-UIScreenshot
+{
+    Param
+    (
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [object] $UIElement,
+        [Parameter(Mandatory=$true)] [ValidateSet('Clipboard')] $As
+    )
+    Process
+    {
+        $renderer = New-Object System.Windows.Media.Imaging.RenderTargetBitmap($UIElement.ActualWidth, $UIElement.ActualHeight, 96d, 96d, [System.Windows.Media.PixelFormats]::Default)
+        $renderer.Render($UIElement)
+
+        $pngEncoder = New-Object System.Windows.Media.Imaging.PngBitmapEncoder
+        $pngEncoder.Frames.Add([System.Windows.Media.Imaging.BitmapFrame]::Create($renderer))
+
+        $memStream = New-Object System.IO.MemoryStream
+        $pngEncoder.Save($memStream)
+        $memStream.Close()
+
+        $bytes = $memStream.ToArray()
+
+        $memStream = New-Object System.IO.MemoryStream @($bytes, 0, $bytes.Length)
+        $image = [System.Drawing.Image]::FromStream($memStream)
+        [System.Windows.Forms.Clipboard]::SetImage($image)
+    }
+}
+
 Function Show-UIMessageBox
 {
     Param

@@ -96,6 +96,7 @@ FunctionsToExport = @(
     'Add-UIBinding',
     'Add-UIEvent',
     'Find-UIParent',
+    'Get-UIScreenshot',
     'Show-UIMessageBox',
     'New-UIStyle',
     'New-UISetter',
