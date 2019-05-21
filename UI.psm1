@@ -932,7 +932,7 @@ New-UIFunction TabControl ([System.Windows.Controls.TabControl]) {
 }
 
 New-UIFunction TabItem ([System.Windows.Controls.TabItem]) {
-    [Parameter(Position=0)] [string] $Header,
+    [Parameter(Position=0)] [object] $Header,
     [Parameter(Position=1)] [object] $Content
 }
 
@@ -1035,7 +1035,7 @@ New-UIFunction Ellipse ([System.Windows.Shapes.Ellipse]) {
 }
 
 New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
-    [Parameter(Position=0)] [string] $Header,
+    [Parameter(Position=0)] [object] $Header,
     [Parameter(Position=1)] [scriptblock] $CellTemplate
 } -PrivateParameters CellTemplate -CustomScript {
     if ($CellTemplate)
