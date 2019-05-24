@@ -459,6 +459,7 @@ Function Invoke-UIPowerShell
     {
         $powershell = New-UIPowerShell -SetVariables $SetVariables
         [void]$powershell.AddScript($ScriptBlock).BeginInvoke()
+        $powershell
     }
 }
 
