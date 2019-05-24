@@ -362,3 +362,56 @@ Show-UIWindow -Width 500 -Height 300 -Title "Brush Sample" {
         }
     }
 }
+
+
+# Service Control Sample
+$ServiceUI = New-UIObject
+$ServiceUI.ServiceList = New-UIObjectCollection
+
+Show-UIWindow -SizeToContent Width -Height 500 -DataContext $ServiceUI {
+    New-UIListView -BindItemsSourceTo ServiceList -Columns {
+        New-UIGridViewColumn Name DisplayName
+        New-UIGridViewColumn State {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UIEllipse -Margin 2,2,6,2 -Style {
+                    New-UISetter Fill Orange
+                    New-UIDataTrigger Status 'Running' { New-UISetter Fill Green }
+                    New-UIDataTrigger Status 'Stopped' { New-UISetter Fill Red }
+                } |
+                    Add-UIBinding Width ActualHeight -RelativeSource Self
+                New-UITextBlock -BindTextTo Status
+            }
+        }
+        New-UIGridViewColumn "Start Mode" StartType
+        New-UIGridViewColumn "Actions" {
+            New-UIStackPanel -Orientation Horizontal {
+                New-UIButton -Padding 6,0,6,0 -Margin 2,0,2,0 Start -AddClick { Start-Service -Name $this.DataContext.Name }
+                New-UIButton -Padding 6,0,6,0 -Margin 0,0,2,0 Stop -AddClick { Stop-Service -Name $this.DataContext.Name -NoWait }
+            }
+        }
+    }
+} -AddLoaded {
+    
+    $serviceList = Get-Service
+    $serviceDict = [ordered]@{}
+    foreach ($service in $serviceList)
+    {
+        $serviceDict[$service.Name] = $service | Select-Object DisplayName, Name, Status, StartType | New-UIObject
+    }
+    $ServiceUI.ServiceList = $serviceDict.Values | New-UIObjectCollection
+    $ServiceUI.Thread = Invoke-UIPowerShell -SetVariables (Get-Variable serviceDict) -ScriptBlock {      
+        while ($true)
+        {
+            foreach ($service in (Get-Service))
+            {
+                $uiService = $serviceDict[$service.Name]
+                if ($uiService.Status -ne $service.Status)
+                {
+                    $uiService.Status = $service.Status
+                }
+            }
+        }
+    }
+} -AddClosing {
+    $ServiceUI.Thread.Runspace.Dispose()
+}
