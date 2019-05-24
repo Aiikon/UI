@@ -1038,7 +1038,11 @@ New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
     [Parameter(Position=0)] [object] $Header,
     [Parameter(Position=1)] [object] $CellTemplate
 } -PrivateParameters CellTemplate -CustomScript {
-    if ($CellTemplate)
+    if ($CellTemplate -is [string])
+    {
+        $control.DisplayMemberBinding = New-Object System.Windows.Data.Binding $CellTemplate
+    }
+    elseif ($CellTemplate)
     {
         if ($CellTemplate -is [scriptblock])
         {
