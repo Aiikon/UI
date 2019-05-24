@@ -336,6 +336,33 @@ Function Add-UIBinding
     }
 }
 
+Register-ArgumentCompleter -CommandName Add-UIBinding -ParameterName Property -ScriptBlock {
+    Param ($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameter)
+    $pipelineAst = $CommandAst.Parent
+    if ($pipelineAst -isnot [System.Management.Automation.Language.PipelineAst]) { return }
+
+    $firstCommand = $pipelineAst.PipelineElements[0].CommandElements[0].Value
+
+    if (!$Script:TypeToDependencyProperties) { $Script:TypeToDependencyProperties = @{} }
+    if (!$Script:TypeToDependencyProperties.Contains($firstCommand))
+    {
+        $typeName = (Get-Command $firstCommand).OutputType.Name
+        $dpNameList = @()
+        if ($typeName)
+        {
+            $dpNameList = New-Object "$typeName" | Get-Member -Static -MemberType Property |
+                Where-Object Definition -Match "System\.Windows\.DependencyProperty" |
+                ForEach-Object Name
+        }
+        $Script:TypeToDependencyProperties[$firstCommand] = foreach ($dpName in $dpNameList)
+        {
+            [System.Management.Automation.CompletionResult]::new($dpName -replace "Property\Z")
+        }
+    }
+    foreach ($result in $Script:TypeToDependencyProperties[$firstCommand])
+        { if ($result.CompletionText -match $WordToComplete) { $result } }
+}
+
 Function Add-UIEvent
 {
     Param
@@ -357,6 +384,28 @@ Function Add-UIEvent
         }
         $Control
     }
+}
+
+Register-ArgumentCompleter -CommandName Add-UIEvent -ParameterName Event -ScriptBlock {
+    Param ($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameter)
+    $pipelineAst = $CommandAst.Parent
+    if ($pipelineAst -isnot [System.Management.Automation.Language.PipelineAst]) { return }
+
+    $firstCommand = $pipelineAst.PipelineElements[0].CommandElements[0].Value
+
+    if (!$Script:TypeToEventNames) { $Script:TypeToEventNames = @{} }
+    if (!$Script:TypeToEventNames.Contains($firstCommand))
+    {
+        $typeName = (Get-Command $firstCommand).OutputType.Name
+        $eventNameList = @()
+        if ($typeName) { $eventNameList = New-Object "$typeName" | Get-Member -MemberType Event | ForEach-Object Name }
+        $Script:TypeToEventNames[$firstCommand] = foreach ($eventName in $eventNameList)
+        {
+            [System.Management.Automation.CompletionResult]::new($eventName)
+        }
+    }
+    foreach ($result in $Script:TypeToEventNames[$firstCommand])
+        { if ($result.CompletionText -match $WordToComplete) { $result } }
 }
 
 Function New-UIObject
