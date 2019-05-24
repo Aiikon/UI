@@ -287,6 +287,7 @@ Function Add-UIBinding
         [Parameter(Mandatory=$true,Position=0)] [string] $Property,
         [Parameter(Mandatory=$true,Position=1)] [string] $Path,
         [Parameter()] [object] $FallbackValue,
+        [Parameter()] [ValidateSet('Self', 'TemplatedParent', 'PreviousData')] $RelativeSource,
         [Parameter()] [ValidateSet('InvertBool', 'BoolToVisibility')] [string[]] $Converter
     )
     Process
@@ -303,6 +304,7 @@ Function Add-UIBinding
         }
 
         $binding = New-Object System.Windows.Data.Binding $Path
+        if ($RelativeSource) { $binding.RelativeSource = [System.Windows.Data.RelativeSource]::$RelativeSource }
         if ($PSBoundParameters['FallbackValue']) { $binding.FallbackValue = $FallbackValue -as $dp.PropertyType }
 
         if ($Converter)
