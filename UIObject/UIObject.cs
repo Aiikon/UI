@@ -168,8 +168,8 @@ namespace Rhodium.UI
             if (uiObject == null) return null;
 
             var result = new Collection<PSAdaptedProperty>();
-            foreach (var property in uiObject.valueDict)
-                result.Add(new PSAdaptedProperty(property.Key, property.Value));
+            foreach (var property in uiObject.propertyDescriptorList)
+                result.Add(new PSAdaptedProperty(property.Name, uiObject.valueDict[property.Name]));
 
             return result;
         }
