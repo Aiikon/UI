@@ -657,12 +657,14 @@ Function New-UISolidColorBrush
     Param
     (
         [Parameter(Mandatory=$true,ParameterSetName='RGB')] [ValidateCount(3,3)] [byte[]] $RGB,
-        [Parameter(Mandatory=$true,ParameterSetName='ARGB')] [ValidateCount(4,4)] [byte[]] $ARGB
+        [Parameter(Mandatory=$true,ParameterSetName='ARGB')] [ValidateCount(4,4)] [byte[]] $ARGB,
+        [Parameter(Mandatory=$true,ParameterSetName='Name')] [string] $Name
     )
     End
     {
         if ($RGB) { $color = [System.Windows.Media.Color]::FromRgb($RGB[0], $RGB[1], $RGB[2]) }
         elseif ($ARGB) { $color = [System.Windows.Media.Color]::FromArgb($ARGB[0], $ARGB[1], $ARGB[2], $ARGB[3]) }
+        elseif ($Name) { $color = [System.Windows.Media.Color]$Name }
         New-Object System.Windows.Media.SolidColorBrush $color
     }
 }
