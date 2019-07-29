@@ -599,7 +599,8 @@ Function New-UIStyle
 {
     Param
     (
-        [Parameter(Mandatory=$true,Position=0)] [scriptblock] $Definition
+        [Parameter(Mandatory=$true,Position=0)] [scriptblock] $Definition,
+        [Parameter()] [type] $TargetType
     )
     End
     {
@@ -607,6 +608,13 @@ Function New-UIStyle
         $def.Type = 'WpfStyle'
         $def.Definition = & $Definition
         $def.FinalizeDict = @{}
+
+        if ($TargetType)
+        {
+            Get-UIStyleFinalized -UIStyle ([pscustomobject]$def) -Type $TargetType
+            return
+        }
+
         [pscustomobject]$def
     }
 }
