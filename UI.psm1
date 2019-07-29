@@ -307,7 +307,7 @@ Function Add-UIBinding
         [Parameter(Mandatory=$true,Position=1)] [string] $Path,
         [Parameter()] [object] $FallbackValue,
         [Parameter()] [ValidateSet('Self', 'TemplatedParent', 'PreviousData')] $RelativeSource,
-        [Parameter()] [ValidateSet('InvertBool', 'BoolToVisibility')] [string[]] $Converter
+        [Parameter()] [ValidateSet('PSTruthyToBool', 'InvertBool', 'BoolToVisibility')] [string[]] $Converter
     )
     Process
     {
