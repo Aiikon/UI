@@ -537,11 +537,13 @@ Function Find-UIParent
 {
     Param
     (
+        [Parameter(ValueFromPipeline=$true)] [object] $UIElement,
         [Parameter(Mandatory=$true,ParameterSetName='Type')] [string] $Type
     )
-    process
+    Process
     {
-        $parent = $PSCmdlet.SessionState.PSVariable.GetValue("this")
+        if ($UIElement) { $parent = $UIElement }
+        else { $parent = $PSCmdlet.SessionState.PSVariable.GetValue("this") }
         while ($parent)
         {
             if ($parent.GetType().Name -eq $Type) { return $parent }
