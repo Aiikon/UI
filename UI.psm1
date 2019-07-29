@@ -106,6 +106,19 @@ namespace Rhodium.UI
             throw new NotImplementedException();
         }
     }
+
+    public class PSTruthyToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return System.Management.Automation.LanguagePrimitives.IsTrue(value);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
 '@
 
