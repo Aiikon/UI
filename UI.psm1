@@ -241,9 +241,14 @@ Function Set-UIKnownProperty
         # Copy all basic properties
         $copyPropertyList = New-Object System.Collections.Generic.List[string]
         $otherSimplePropertyList = 'Margin', 'Padding', 'BorderThickness', 'CornerRadius', 'ContextMenu', 'Style', 'LayoutTransform'
+        $copyIfPresentPropertyList = 'Points'
         foreach ($property in ($Script:SimplePropertyDict.Keys + $otherSimplePropertyList))
         {
             if ($Properties.Contains($property)) { $copyPropertyList.Add($property) }
+        }
+        foreach ($property in $copyIfPresentPropertyList)
+        {
+            if ($Control.$Property) { $copyPropertyList.Add($property) }
         }
         foreach ($property in $Properties['AlsoSet'].Keys) { $copyPropertyList.Add($propery) }
         if ($Properties.Contains('Align')) { $copyPropertyList.Add('VerticalAlignment'); $copyPropertyList.Add('HorizontalAlignment') }
@@ -951,6 +956,11 @@ New-UIFunction DockPanel ([System.Windows.Controls.DockPanel]) {
     [Parameter(Position=0)] [object] $Children
 }
 
+New-UIFunction Expander ([System.Windows.Controls.ExpandDirection]) {
+    [Parameter(Position=0)] [object] $Header,
+    [Parameter(Position=1)] [object] $Children
+}
+
 New-UIFunction Grid ([System.Windows.Controls.Grid]) {
     [Parameter(Position=0)] [object] $Children,
     [Parameter()] [string[]] $RowDef,
@@ -1195,6 +1205,21 @@ New-UIFunction Polyline ([System.Windows.Shapes.Polyline]) {
     [Parameter(Mandatory=$true)] [double[]] $Points,
     [Parameter()] [double] $StrokeThickness,
     [Parameter()] [System.Windows.Media.Brush] $Stroke
+} -CustomScript {
+    for ($i = 0; $i -lt $Points.Count; $i+=2)
+    {
+        $point = New-Object System.Windows.Point $Points[$i], $Points[$i+1]
+        $control.Points.Add($point)
+    }
+    [void]$PSBoundParameters.Remove('Points')
+    Set-UIKnownProperty $control $PSBoundParameters
+}
+
+New-UIFunction Polygon ([System.Windows.Shapes.Polygon]) {
+    [Parameter(Mandatory=$true)] [double[]] $Points,
+    [Parameter()] [double] $StrokeThickness,
+    [Parameter()] [System.Windows.Media.Brush] $Stroke,
+    [Parameter()] [System.Windows.Media.Brush] $Fill
 } -CustomScript {
     for ($i = 0; $i -lt $Points.Count; $i+=2)
     {
