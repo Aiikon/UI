@@ -305,6 +305,7 @@ Function Add-UIBinding
         [Parameter(ValueFromPipeline=$true)] [object] $Control,
         [Parameter(Mandatory=$true,Position=0)] [string] $Property,
         [Parameter(Mandatory=$true,Position=1)] [string] $Path,
+        [Parameter()] [System.Windows.Data.BindingMode] $Mode,
         [Parameter()] [object] $FallbackValue,
         [Parameter()] [ValidateSet('Self', 'TemplatedParent', 'PreviousData')] $RelativeSource,
         [Parameter()] [ValidateSet('PSTruthyToBool', 'InvertBool', 'BoolToVisibility')] [string[]] $Converter
@@ -323,6 +324,7 @@ Function Add-UIBinding
         }
 
         $binding = New-Object System.Windows.Data.Binding $Path
+        if ($Mode) { $binding.Mode = $Mode }
         if ($RelativeSource) { $binding.RelativeSource = [System.Windows.Data.RelativeSource]::$RelativeSource }
         if ($PSBoundParameters['FallbackValue']) { $binding.FallbackValue = $FallbackValue -as $dp.PropertyType }
 
