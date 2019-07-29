@@ -817,6 +817,8 @@ Function Show-UIWindow
         [Parameter(ParameterSetName='Content')] [scriptblock] $AddClosing,
         [Parameter(ParameterSetName='Content')] [System.Windows.SizeToContent] $SizeToContent,
         [Parameter(ParameterSetName='Content')] [System.Windows.WindowStyle] $WindowStyle,
+        [Parameter(ParameterSetName='Content')] [System.Windows.ResizeMode] $ResizeMode,
+        [Parameter(ParameterSetName='Content')] [System.Windows.WindowStartupLocation] $WindowStartupLocation,
         [Parameter(ParameterSetName='Content')] [object] $DataContext,
         [Parameter(ParameterSetName='Content')] [hashtable] $AlsoSet
     )
@@ -922,6 +924,8 @@ New-UIFunction Window ([System.Windows.Window]) {
         [Parameter()] [string] $Title,
         [Parameter()] [System.Windows.SizeToContent] $SizeToContent,
         [Parameter()] [System.Windows.WindowStyle] $WindowStyle,
+        [Parameter()] [System.Windows.ResizeMode] $ResizeMode,
+        [Parameter()] [System.Windows.WindowStartupLocation] $WindowStartupLocation,
         [Parameter()] [scriptblock] $AddLoaded,
         [Parameter()] [scriptblock] $AddClosing
 } -CustomScript {
@@ -1236,6 +1240,7 @@ New-UIFunction Slider ([System.Windows.Controls.Slider]) {
 
 New-UIFunction TextBlock ([System.Windows.Controls.TextBlock]) {
     [Parameter(Position=0)] [string] $Text,
+    [Parameter()] [double[]] $Padding,
     [Parameter()] [double] $FontSize,
     [Parameter()] [object] $FontWeight,
     [Parameter()] [object] $FontStyle,
@@ -1250,6 +1255,7 @@ New-UIFunction TextBox ([System.Windows.Controls.TextBox]) {
     [Parameter()] [object] $FontWeight,
     [Parameter()] [object] $FontStyle,
     [Parameter()] [object] $FontFamily,
+    [Parameter()] [System.Windows.Media.Brush] $Foreground,
     [Parameter()] [string] $BindTextTo,
     [Parameter()] [bool] $AcceptsReturn,
     [Parameter()] [bool] $IsReadOnly,
