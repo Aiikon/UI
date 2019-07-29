@@ -288,6 +288,12 @@ Function Set-UIKnownProperty
             foreach ($child in $children) { $factory.AppendChild($child) }
         }
 
+        # Fix nested ItemsControl factories
+        if ($controlType -eq [System.Windows.Controls.ItemsControl] -and $Control.ItemTemplate)
+        {
+            $factory.SetValue([System.Windows.Controls.ItemsControl]::ItemTemplateProperty, $control.ItemTemplate)
+        }
+
         $factory
     }
 }
