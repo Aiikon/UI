@@ -1155,6 +1155,11 @@ New-UIFunction GridViewColumn ([System.Windows.Controls.GridViewColumn]) {
     Set-UIKnownProperty $control $PSBoundParameters
 }
 
+
+New-UIFunction Image ([System.Windows.Controls.Image]) {
+    [Parameter(Position=0)] [string] $Source
+}
+
 New-UIFunction Label ([System.Windows.Controls.Label]) {
     [Parameter(Position=0)] [object] $Content
 }
