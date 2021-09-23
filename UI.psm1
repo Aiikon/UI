@@ -1170,6 +1170,7 @@ New-UIFunction Line ([System.Windows.Shapes.Line]) {
     [Parameter()] [double] $X2,
     [Parameter()] [double] $Y2,
     [Parameter()] [double] $StrokeThickness,
+    [Parameter()] [double[]] $StrokeDashArray,
     [Parameter()] [System.Windows.Media.Brush] $Stroke
 }
 
@@ -1209,6 +1210,7 @@ New-UIFunction PasswordBox ([System.Windows.Controls.PasswordBox]) {
 New-UIFunction Polyline ([System.Windows.Shapes.Polyline]) {
     [Parameter(Mandatory=$true)] [double[]] $Points,
     [Parameter()] [double] $StrokeThickness,
+    [Parameter()] [double[]] $StrokeDashArray,
     [Parameter()] [System.Windows.Media.Brush] $Stroke
 } -CustomScript {
     for ($i = 0; $i -lt $Points.Count; $i+=2)
