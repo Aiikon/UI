@@ -415,3 +415,46 @@ Show-UIWindow -SizeToContent Width -Height 500 -DataContext $ServiceUI {
 } -AddClosing {
     $ServiceUI.Thread.Runspace.Dispose()
 }
+
+# Locked UI with StatusBar Sample
+$LockedUI = New-UIObject
+$LockedUI.InterfaceEnabled = $true
+$LockedUI.StatusText = ''
+$LockedUI.ProgressValue = 0
+
+Show-UIWindow -Width 400 -Height 300 -Title "Locked UI with Status Bar" -DataContext $LockedUI {
+    New-UIDockPanel {
+        New-UIStatusBar -Dock Bottom {
+            New-UIStatusBarItem -Dock Right {
+                New-UIProgressBar -Width 100 -Height 14 -Maximum 100 -BindValueTo ProgressValue
+            }
+            New-UISeparator -Dock Right
+            New-UIStatusBarItem -Dock Right {
+                New-UITextBlock -BindTextTo StatusText -TextAlignment Right
+            }
+            New-UISeparator -Dock Right
+
+            New-UIStatusBarItem # Fill empty space
+        }
+        New-UIDockPanel {
+            New-UIButton -Margin 4 "Start Operation" -AddClick {
+                $LockedUI.Thread = Invoke-UIPowerShell -SetVariables (Get-Variable LockedUI) -ScriptBlock {
+                    $LockedUI.InterfaceEnabled = $false
+                    $LockedUI.StatusText = 'Operation running...'
+                    1..100 | ForEach-Object {
+                        Start-Sleep -Milliseconds 50
+                        $LockedUI.ProgressValue = $_
+                    }
+                    $LockedUI.StatusText = 'Operation completed'
+                    $LockedUI.InterfaceEnabled = $true
+                }
+            }
+        } | Add-UIBinding IsEnabled InterfaceEnabled
+    }
+} -AddClosing {
+    if ($ServiceUI.Thread)
+    {
+        $ServiceUI.Thread.Runspace.Dispose()
+    }
+}
+

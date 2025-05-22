@@ -1295,6 +1295,18 @@ New-UIFunction TextBox ([System.Windows.Controls.TextBox]) {
     [Parameter()] [System.Windows.Controls.ScrollBarVisibility] $VerticalScrollBarVisibility
 }
 
+New-UIFunction StatusBar ([System.Windows.Controls.Primitives.StatusBar]) {
+    [Parameter(Position=0)] [object] $Items
+}
+
+New-UIFunction StatusBarItem ([System.Windows.Controls.Primitives.StatusBarItem]) {
+    [Parameter(Position=0)] [object] $Content
+}
+
+New-UIFunction Separator ([System.Windows.Controls.Separator]) {
+    
+}
+
 New-UIFunction RotateTransform ([System.Windows.Media.RotateTransform]) -BareTemplate {
     [Parameter()] [double] $Angle
 }

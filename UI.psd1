@@ -146,6 +146,9 @@ FunctionsToExport = @(
     'New-UISlider'
     'New-UITextBlock'
     'New-UITextBox'
+    'New-UIStatusBar'
+    'New-UIStatusBarItem'
+    'New-UISeparator'
     'New-UIRotateTransform'
     'New-UIScaleTransform'
 )
